@@ -1,0 +1,3 @@
+[submodule "governance"]
+	path = governance
+	url = https://github.com/arbitrumfoundation/governance
