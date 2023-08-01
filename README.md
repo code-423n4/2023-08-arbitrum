@@ -11,9 +11,6 @@ Ultimately, when we launch the audit, this repo will be made public and will con
 Some of the checklists in this doc are for **C4 (🐺)** and some of them are for **you as the audit sponsor (⭐️)**.
 
 ---
-
-# Audit setup
-
 # Repo setup
 
 ## ⭐️ Sponsor: Add code to this repo
@@ -64,6 +61,8 @@ Under "SPONSORS ADD INFO HERE" heading below, include the following:
 - [Read our guidelines for more details](https://docs.code4rena.com/roles/wardens)
 - Starts August 3, 2023 20:00 UTC
 - Ends August 10, 2023 20:00 UTC
+- 
+**IMPORTANT NOTE:** Prior to receiving payment from this audit you MUST become a [Certified Warden](https://code4rena.com/certified-contributor-application/)  (successfully complete KYC). This also applies to bot crews.  You do not have to complete this process before competing or submitting bugs. You must have started this process within 48 hours after the audit ends, i.e. **by August 12, 2023 at 20:00 UTC in order to receive payment.**
 
 ## Automated Findings / Publicly Known Issues
 
