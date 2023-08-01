@@ -26,7 +26,49 @@ Automated findings output for the audit can be found [here](bot-report.md) withi
 
 # Overview
 
-*Please provide some context about the code being audited, and identify any areas of specific concern in reviewing the code. (This is a good place to link to your docs, if you have them.)*
+Arbitrum is a suite of scaling solutions providing environments with high-throughput, low-cost smart contracts, backed by industry-leading proving technology rooted in Ethereum.
+The [Arbitrum DAO](https://docs.arbitrum.foundation/concepts/arbitrum-dao) governs the Arbitrum One and Nova chains.
+The [Security Council](https://docs.arbitrum.foundation/concepts/security-council) is responsible for making emergency response decisions when the community needs to address a critical security risks to the protocol. They are a 12 member council from independent organisations that hold the ability to conduct emergency actions to the Arbitrum chains. The 12 member council is separated into 2 cohorts which are elected alternatively every 6 months.
+
+The codebase includes the subsystem of the Arbitrum Governance system that allows these cohorts to be managed and elected through an on-chain suite of smart contracts written in Solidity.
+
+A summary of the statement of project can be found in the [Arbitrum Governance forums](https://forum.arbitrum.foundation/t/proposal-security-council-elections-proposed-implementation-spec/15425).
+
+As explained in the post, the [Arbitrum Constitution](https://docs.arbitrum.foundation/dao-constitution) already specifies the behaviour of the elections, it should be considered a bug if the implementation deviates from the Constitution in a way not documented in the forum statement above.
+
+The elections share the same timelocks as the [core governance flow](https://github.com/ArbitrumFoundation/governance/blob/main/docs/overview.md). 
+
+They also use the [Governance Action Contracts](https://github.com/ArbitrumFoundation/governance/blob/main/src/gov-action-contracts/README.md) both in activation and in the ongoing flow.
+
+Throughout the codebase, language of “contenders”, “nominees” and “members” is used:
+
+- “contender” - someone who can receive votes in the nominee selection stage but who has received less than 0.2% of votable tokens
+- “nominee” - someone who has received 0.2% of votable tokens in the nominee selection stage
+    - “compliant” / “noncompliant” indicates whether they’ve been excluded by the nominee vetter
+- “member” - a member of the security council
+
+A [technical deep dive session](https://twitter.com/i/spaces/1yoKMZwjVODGQ) will be hosted on Spaces Friday August 4th
+
+You can also join [Arbitrum's discord server](https://discord.gg/arbitrum) to learn more and join the on-going discussions.
+
+## Areas of concern
+
+- Ensure that the implementation does not deviate from the constitution in any way that’s not documented in the forum post
+- Ensure that existing Governance security is not effected in any way by the new elections
+- Ensure that the elections contracts do allow any new parties to gain governance power (power to call the upgrade executors in arbitrary ways) in the system - other than the security council and the dao which already have governance power
+- Ensure that the elections contracts do allow any new parties to gain governance power (power to call the upgrade executors in arbitrary ways) in the system - other than the security council and the dao which already have governance power
+- Ensure the power to upgrade any of the election contracts is held only by the DAO and the Security councils
+- Ensure that elections can be created and progressed by any party, inline with the correct schedule
+- Ensure only the DAO or Security Council can change the election process in any way
+- Ensure that votes are not double counted in the governors, and conform to the weighting schedule specified in the Constitution
+
+
+## Known risks
+
+- It’s possible for Core Governance and the elections to schedule the same operation in timelocks, and therefore block each other. However the DAO would need to do this on purpose, and against their Constitution. If the DAO is willing to make proposals against their Constitution then they can arbitrarily change all the contracts, so a clashing operation is not considered an issue.
+- The Security Council can create updates in the SecurityCouncilManager that could cause an election execution to fail. They are expected to take care when making these kinds of updates not to cause that issue. Since the Security Council can technically change all the contracts, a Council that is causing disruption can already do so in much wider ways.
+- An additional method “rotateMember” is provided that does the same as “replaceMember”. Although this method has the same functionality as “replaceMember” it has a different semantic meaning as it should be used to change the key of an existing member, rather than replace a member of with a different one.
+
 
 # Scope
 
@@ -58,37 +100,8 @@ Automated findings output for the audit can be found [here](bot-report.md) withi
 
 ## Out of scope
 
-*List any files/contracts that are out of scope for this audit.*
-Contracts are out of scope from the competition, but might be eligible for the Immunify bug bounty program.
+There are multiple other contracts in the repo that correspond to the rest of Arbitrum's governance system. Those contracts are out of scope for the competition but are eligible for the [Immunify bug bounty program](https://immunefi.com/bounty/arbitrum/).
 
-# Additional Context
-
-A [technical deep dive session](https://twitter.com/i/spaces/1yoKMZwjVODGQ) hosted on Spaces Friday August 4th
-
-The [Arbitrum Foundation documentation](https://docs.arbitrum.foundation/) include a lot of information on related themes. You can read more about the [Security Council and elections](https://docs.arbitrum.foundation/concepts/security-council) as well as an [overview of how governance works](https://github.com/ArbitrumFoundation/governance/blob/main/docs/overview.md).
-
-You can also join [Arbitrum's discord server](https://discord.gg/arbitrum) to learn more and join the discussions.
-
-## Areas of concern
-
-- Ensure that elections can do nothing other than change members in the Safe, according to the Constitution rules
-- Ensure that existing Governance security is not effected in any way
-- Ensure that upgrade/migration sets the correct roles for all parties
-- Ensure that elections can be created and progressed by any party, inline with the correct schedule
-- Ensure only the DAO or Security Council can change the election process in any way
-- Ensure no party except the DAO or Security Council can stop an election
-- Ensure that votes are not double counted in the governors, and conform to the weighting schedule specified in the Constitution
-
-- Ensure that the implementation does not deviate from the constitution in any way that’s not documented in the forum post
-- Ensure that non of the current governance flow is compromised by the addition of the elections
-- Ensure that the elections contracts do allow any new parties to gain governance power (power to call the upgrade executors in arbitrary ways) in the system - other than the security council and the dao which already have governance power
-- Power to upgrade any of the election contracts is held only by the DAO and the Security councils
-
-## Known risks
-
-- It’s possible for Core Governance and the elections to schedule the same operation in timelocks, and therefore block each other. However the DAO would need to do this on purpose, and against their Constitution. If the DAO is willing to make proposals against their Constitution then they can arbitrarily change all the contracts, so a clashing operation is not considered an issue.
-- The Security Council can create updates in the SecurityCouncilManager that could cause an election execution to fail. They are expected to take care when making these kinds of updates not to cause that issue. Since the Security Council can technically change all the contracts, a Council that is causing disruption can already do so in much wider ways.
-- An additional method “rotateMember” is provided that does the same as “replaceMember”. Although this method has the same functionality as “replaceMember” it has a different semantic meaning as it should be used to change the key of an existing member, rather than replace a member of with a different one.
 
 ## Scoping Details 
 ```
