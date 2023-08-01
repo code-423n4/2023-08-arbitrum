@@ -48,8 +48,8 @@ Throughout the codebase, language of “contenders”, “nominees” and “mem
 - “member” - a member of the security council
 
 In-depth documentation on the system can also be found in [Security Council Manager as a source of truth
-](https://github.com/ArbitrumFoundation/governance/blob/c45b7e1bf88be0713a45838c2863dcdc6292bd8b/docs/security-council-manager.md), [Security Council Election and Membership Management
-](https://github.com/ArbitrumFoundation/governance/blob/c45b7e1bf88be0713a45838c2863dcdc6292bd8b/docs/security-council-mgmt.md) and [Nominee vetting guidelines](https://github.com/ArbitrumFoundation/governance/blob/c45b7e1bf88be0713a45838c2863dcdc6292bd8b/docs/security-council-nominee-vetting.md).
+](https://github.com/ArbitrumFoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/docs/security-council-manager.md), [Security Council Election and Membership Management
+](https://github.com/ArbitrumFoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/docs/security-council-mgmt.md) and [Nominee vetting guidelines](https://github.com/ArbitrumFoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/docs/security-council-nominee-vetting.md).
 
 A [technical deep dive session](https://twitter.com/i/spaces/1yoKMZwjVODGQ) will be hosted on Twitter Spaces on Friday August 4th.
 
@@ -58,9 +58,8 @@ You can also join [Arbitrum's discord server](https://discord.gg/arbitrum) to le
 ## Areas of concern
 
 - Ensure that the implementation does not deviate from the constitution in any way that’s not documented in the forum post
-- Ensure that existing Governance security is not effected in any way by the new elections
-- Ensure that the elections contracts do allow any new parties to gain governance power (power to call the upgrade executors in arbitrary ways) in the system - other than the security council and the dao which already have governance power
-- Ensure that the elections contracts do allow any new parties to gain governance power (power to call the upgrade executors in arbitrary ways) in the system - other than the security council and the dao which already have governance power
+- Ensure that existing Governance security is not affected in any way by the new elections
+- Ensure that the elections contracts do not allow any new parties to gain governance power (power to call the upgrade executors in arbitrary ways) in the system - other than the security council and the dao which already have governance power
 - Ensure the power to upgrade any of the election contracts is held only by the DAO and the Security councils
 - Ensure that elections can be created and progressed by any party, inline with the correct schedule
 - Ensure only the DAO or Security Council can change the election process in any way
@@ -80,28 +79,30 @@ You can also join [Arbitrum's discord server](https://discord.gg/arbitrum) to le
 
 *For line of code counts, we recommend using [cloc](https://github.com/AlDanial/cloc).* 
 
+All referenced code is frozen at commit hash [c18de53820c505fc459f766c1b224810eaeaabc5](https://github.com/arbitrumfoundation/governance/tree/c18de53820c505fc459f766c1b224810eaeaabc5).
+
 | Contract | SLOC | Purpose |  
 | ----------- | ----------- | ----------- | 
-| [SecurityCouncilManager.sol](https://github.com/arbitrumfoundation/governance/blob/c45b7e1bf88be0713a45838c2863dcdc6292bd8b/src/security-council-mgmt/SecurityCouncilManager.sol) | 326 |  The source of true for the current state of all security councils. Initiates updates across chains, looks to the UpgradeExecRouteBuilder to build the payload for it. |
-| [SecurityCouncilNomineeElectionGovernor.sol](https://github.com/arbitrumfoundation/governance/blob/c45b7e1bf88be0713a45838c2863dcdc6292bd8b/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol) | 298 |  Delegates vote to select a short list of nominees from a long list of contenders. Introduces a vetting period to allow a trusted party to exclude/include contenders |
-| [SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol](https://github.com/arbitrumfoundation/governance/blob/c45b7e1bf88be0713a45838c2863dcdc6292bd8b/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol) | 110 | counting module for the nominee governor |
-| [SecurityCouncilNomineeElectionGovernorTiming.sol](https://github.com/arbitrumfoundation/governance/blob/c45b7e1bf88be0713a45838c2863dcdc6292bd8b/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorTiming.sol) | 67 | Timing functionality for the nominee election governor |
-| [SecurityCouncilMemberElectionGovernor.sol](https://github.com/arbitrumfoundation/governance/blob/c45b7e1bf88be0713a45838c2863dcdc6292bd8b/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol) | 153 | Delegates vote for 6 candidates from the short list |
-| [SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol](https://github.com/arbitrumfoundation/governance/blob/c45b7e1bf88be0713a45838c2863dcdc6292bd8b/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol) | 186 | counting module for the member election governor |
-| [SecurityCouncilMemberRemovalGovernor.sol](https://github.com/arbitrumfoundation/governance/blob/c45b7e1bf88be0713a45838c2863dcdc6292bd8b/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol) | 193 | Delegates vote to remove a candidate from the existing security council |
-| [ArbitrumGovernorVotesQuorumFractionUpgradeable.sol](https://github.com/arbitrumfoundation/governance/blob/c45b7e1bf88be0713a45838c2863dcdc6292bd8b/src/security-council-mgmt/governors/modules/ArbitrumGovernorVotesQuorumFractionUpgradeable.sol) | 27 | Base functionality for counting only “votable” tokens |
-| [ElectionGovernor.sol](https://github.com/arbitrumfoundation/governance/blob/c45b7e1bf88be0713a45838c2863dcdc6292bd8b/src/security-council-mgmt/governors/modules/ElectionGovernor.sol) | 34 | Shared functionality for election governors |
-| [UpgradeExecRouteBuilder.sol](https://github.com/arbitrumfoundation/governance/blob/c45b7e1bf88be0713a45838c2863dcdc6292bd8b/src/UpgradeExecRouteBuilder.sol) | 131 | Builds routes to target the upgrade executors on each chain |
-| [SecurityCouncilMemberSyncAction.sol](https://github.com/arbitrumfoundation/governance/blob/c45b7e1bf88be0713a45838c2863dcdc6292bd8b/src/security-council-mgmt/SecurityCouncilMemberSyncAction.sol) | 95 | Action contract to update the members of the gnosis safe |
-| [SecurityCouncilMgmtUtils.sol](https://github.com/arbitrumfoundation/governance/blob/c45b7e1bf88be0713a45838c2863dcdc6292bd8b/src/security-council-mgmt/SecurityCouncilMgmtUtils.sol) | 30 | Shared array utils |
-| [Common.sol](https://github.com/arbitrumfoundation/governance/blob/c45b7e1bf88be0713a45838c2863dcdc6292bd8b/src/security-council-mgmt/Common.sol) | 13 | Shared common data structures |
-| [L2SecurityCouncilMgmtFactory.sol](https://github.com/arbitrumfoundation/governance/blob/c45b7e1bf88be0713a45838c2863dcdc6292bd8b/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol) | 197 | Deploys election contracts |
-| [GovernanceChainSCMgmtActivationAction.sol](https://github.com/arbitrumfoundation/governance/blob/c45b7e1bf88be0713a45838c2863dcdc6292bd8b/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/GovernanceChainSCMgmtActivationAction.sol) | 118 | Activates elections on Arbitrum One |
-| [L1SCMgmtActivationAction.sol](https://github.com/arbitrumfoundation/governance/blob/c45b7e1bf88be0713a45838c2863dcdc6292bd8b/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/L1SCMgmtActivationAction.sol) | 52 | Activates elections on L1 Ethereum |
-| [NonGovernanceChainSCMgmtActivationAction.sol](https://github.com/arbitrumfoundation/governance/blob/c45b7e1bf88be0713a45838c2863dcdc6292bd8b/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/NonGovernanceChainSCMgmtActivationAction.sol) | 37 | Activates elections on Arbitrum Nova |
-| [SecurityCouncilMgmtUpgradeLib.sol](https://github.com/arbitrumfoundation/governance/blob/c45b7e1bf88be0713a45838c2863dcdc6292bd8b/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/SecurityCouncilMgmtUpgradeLib.sol) | 79 | Shared utilities |
-| [KeyValueStore.sol](https://github.com/arbitrumfoundation/governance/blob/c45b7e1bf88be0713a45838c2863dcdc6292bd8b/src/gov-action-contracts/execution-record/KeyValueStore.sol) | 19 | Stores values against a key (useful for external storage to avoid Actions from using state) |
-| [ActionExecutionRecord.sol](https://github.com/arbitrumfoundation/governance/blob/c45b7e1bf88be0713a45838c2863dcdc6292bd8b/src/gov-action-contracts/execution-record/ActionExecutionRecord.sol) | 19 | Stores a record that the action executed. |
+| [SecurityCouncilManager.sol](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol) | 326 |  The source of true for the current state of all security councils. Initiates updates across chains, looks to the UpgradeExecRouteBuilder to build the payload for it. |
+| [SecurityCouncilNomineeElectionGovernor.sol](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol) | 298 |  Delegates vote to select a short list of nominees from a long list of contenders. Introduces a vetting period to allow a trusted party to exclude/include contenders |
+| [SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol) | 110 | counting module for the nominee governor |
+| [SecurityCouncilNomineeElectionGovernorTiming.sol](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorTiming.sol) | 67 | Timing functionality for the nominee election governor |
+| [SecurityCouncilMemberElectionGovernor.sol](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol) | 153 | Delegates vote for 6 candidates from the short list |
+| [SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol) | 186 | counting module for the member election governor |
+| [SecurityCouncilMemberRemovalGovernor.sol](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol) | 193 | Delegates vote to remove a candidate from the existing security council |
+| [ArbitrumGovernorVotesQuorumFractionUpgradeable.sol](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/ArbitrumGovernorVotesQuorumFractionUpgradeable.sol) | 27 | Base functionality for counting only “votable” tokens |
+| [ElectionGovernor.sol](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/ElectionGovernor.sol) | 34 | Shared functionality for election governors |
+| [UpgradeExecRouteBuilder.sol](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol) | 131 | Builds routes to target the upgrade executors on each chain |
+| [SecurityCouncilMemberSyncAction.sol](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilMemberSyncAction.sol) | 95 | Action contract to update the members of the gnosis safe |
+| [SecurityCouncilMgmtUtils.sol](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilMgmtUtils.sol) | 30 | Shared array utils |
+| [Common.sol](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/Common.sol) | 13 | Shared common data structures |
+| [L2SecurityCouncilMgmtFactory.sol](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol) | 197 | Deploys election contracts |
+| [GovernanceChainSCMgmtActivationAction.sol](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/GovernanceChainSCMgmtActivationAction.sol) | 118 | Activates elections on Arbitrum One |
+| [L1SCMgmtActivationAction.sol](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/L1SCMgmtActivationAction.sol) | 52 | Activates elections on L1 Ethereum |
+| [NonGovernanceChainSCMgmtActivationAction.sol](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/NonGovernanceChainSCMgmtActivationAction.sol) | 37 | Activates elections on Arbitrum Nova |
+| [SecurityCouncilMgmtUpgradeLib.sol](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/SecurityCouncilMgmtUpgradeLib.sol) | 79 | Shared utilities |
+| [KeyValueStore.sol](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/execution-record/KeyValueStore.sol) | 19 | Stores values against a key (useful for external storage to avoid Actions from using state) |
+| [ActionExecutionRecord.sol](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/execution-record/ActionExecutionRecord.sol) | 19 | Stores a record that the action executed. |
 
 
 ## Out of scope
