@@ -16,7 +16,7 @@
   
 **IMPORTANT NOTE:** Prior to receiving payment from this audit you MUST become a [Certified Warden](https://code4rena.com/certified-contributor-application/)  (successfully complete KYC). This also applies to bot crews.  You do not have to complete this process before competing or submitting bugs. You must have started this process within 48 hours after the audit ends, i.e. **by August 12, 2023 at 20:00 UTC in order to receive payment.**
 
-For the Gas award pool the only concern is for gas usage related to voting, this does not executing the proposal and the rest of its lifecycle since these are one-off operations.
+For the Gas award pool the only concern is for gas usage related to voting, this does not include executing the proposal and the rest of its lifecycle since these are one-off operations.
 
 ## Automated Findings / Publicly Known Issues
 
