@@ -58,9 +58,8 @@ You can also join [Arbitrum's discord server](https://discord.gg/arbitrum) to le
 ## Areas of concern
 
 - Ensure that the implementation does not deviate from the constitution in any way that’s not documented in the forum post
-- Ensure that existing Governance security is not effected in any way by the new elections
-- Ensure that the elections contracts do allow any new parties to gain governance power (power to call the upgrade executors in arbitrary ways) in the system - other than the security council and the dao which already have governance power
-- Ensure that the elections contracts do allow any new parties to gain governance power (power to call the upgrade executors in arbitrary ways) in the system - other than the security council and the dao which already have governance power
+- Ensure that existing Governance security is not affected in any way by the new elections
+- Ensure that the elections contracts do not allow any new parties to gain governance power (power to call the upgrade executors in arbitrary ways) in the system - other than the security council and the dao which already have governance power
 - Ensure the power to upgrade any of the election contracts is held only by the DAO and the Security councils
 - Ensure that elections can be created and progressed by any party, inline with the correct schedule
 - Ensure only the DAO or Security Council can change the election process in any way
