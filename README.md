@@ -28,7 +28,7 @@ Automated findings output for the audit can be found [here](bot-report.md) withi
 
 Arbitrum is a suite of scaling solutions providing environments with high-throughput, low-cost smart contracts, backed by industry-leading proving technology rooted in Ethereum.
 The [Arbitrum DAO](https://docs.arbitrum.foundation/concepts/arbitrum-dao) governs the Arbitrum One and Nova chains.
-The [Security Council](https://docs.arbitrum.foundation/concepts/security-council) is responsible for making emergency response decisions when the community needs to address a critical security risks to the protocol. They are a 12 member council from independent organisations that hold the ability to conduct emergency actions to the Arbitrum chains. The 12 member council is separated into 2 cohorts which are elected alternatively every 6 months.
+The [Security Council](https://docs.arbitrum.foundation/concepts/security-council) is responsible for making emergency response decisions when the community needs to address a critical security risk to the protocol. They are a 12 member council from independent organisations that hold the ability to conduct emergency actions to the Arbitrum chains. The 12 member council is separated into 2 cohorts which are elected alternatively every 6 months.
 
 The codebase includes the subsystem of Arbitrum Governance that allows these cohorts to be managed and elected through an on-chain suite of smart contracts written in Solidity.
 
