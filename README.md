@@ -96,6 +96,8 @@ You can also join [Arbitrum's discord server](https://discord.gg/arbitrum) to le
 | [L1SCMgmtActivationAction.sol](https://github.com/arbitrumfoundation/governance/blob/security-council-mgmt--base/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/L1SCMgmtActivationAction.sol) | 52 | Activates elections on L1 Ethereum |
 | [NonGovernanceChainSCMgmtActivationAction.sol](https://github.com/arbitrumfoundation/governance/blob/security-council-mgmt--base/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/NonGovernanceChainSCMgmtActivationAction.sol) | 37 | Activates elections on Arbitrum Nova |
 | [SecurityCouncilMgmtUpgradeLib.sol](https://github.com/arbitrumfoundation/governance/blob/security-council-mgmt--base/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/SecurityCouncilMgmtUpgradeLib.sol) | 79 | Shared utilities |
+| [KeyValueStore.sol](https://github.com/arbitrumfoundation/governance/blob/security-council-mgmt--base/src/gov-action-contracts/execution-record/KeyValueStore.sol) | 19 | Stores values against a key (useful for external storage to avoid Actions from using state) |
+| [ActionExecutionRecord.sol](https://github.com/arbitrumfoundation/governance/blob/security-council-mgmt--base/src/gov-action-contracts/execution-record/ActionExecutionRecord.sol) | 19 | Stores a record that the action executed. |
 
 
 ## Out of scope
@@ -106,8 +108,8 @@ There are multiple other contracts in the repo that correspond to the rest of Ar
 ## Scoping Details 
 ```
 - If you have a public code repo, please share it here: https://github.com/ArbitrumFoundation/governance
-- How many contracts are in scope?: 18
-- Total SLoC for these contracts?: 2146 
+- How many contracts are in scope?: 20
+- Total SLoC for these contracts?: 2184 
 - How many external imports are there?: 16
 - How many separate interfaces and struct definitions are there for the contracts within scope?: 13 
 - Does most of your code generally use composition or inheritance?: Inheritance
