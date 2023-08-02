@@ -1,4 +1,4 @@
-# Arbitrum Security Council Elections Contest Details
+# Arbitrum Security Council Elections audit details
 - Total Prize Pool: $90,500 USDC 
   - HM awards: $61,875 USDC 
   - Analysis awards: $3,750 USDC 
