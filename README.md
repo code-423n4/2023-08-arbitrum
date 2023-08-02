@@ -129,6 +129,8 @@ There are multiple other contracts in the repo that correspond to the rest of Ar
 - Is this either a fork of or an alternate implementation of another project?:  No 
 - Does it use a side-chain?: No
 - Describe any specific areas you would like addressed: Read "Areas of concern" above
+- In the event of a DOS, could you outline a minimum duration after which you would consider a finding valid?: Any scenario where a malicious actor disrupts the system long enough to compromise the integrity of the elections.
+- Can you specify on which blockchains your smart contracts will be deployed?: Ethereum and Arbitrum. The timelocks have code associated with them to handle crosschain messages
 ```
 
 # Tests
