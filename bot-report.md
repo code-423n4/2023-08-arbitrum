@@ -8336,4 +8336,2497 @@ File: src/security-council-mgmt/SecurityCouncilManager.sol
 File: src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol
 
 182      function _setVoteSuccessNumerator(uint256 _voteSuccessNumerator) internal {
-183          if (!(0 < _voteSuccessNumerator && _voteSuc
+183          if (!(0 < _voteSuccessNumerator && _voteSuccessNumerator <= voteSuccessDenominator)) {
+184              revert InvalidVoteSuccessNumerator(_voteSuccessNumerator);
+185          }
+186          voteSuccessNumerator = _voteSuccessNumerator;
+187          emit VoteSuccessNumeratorSet(_voteSuccessNumerator);
+188:     }
+
+```
+*GitHub*: [182](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L182-L188)
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol
+
+246      function setNomineeVetter(address _nomineeVetter) external onlyGovernance {
+247          address oldNomineeVetter = nomineeVetter;
+248          nomineeVetter = _nomineeVetter;
+249          emit NomineeVetterChanged(oldNomineeVetter, _nomineeVetter);
+250:     }
+
+```
+*GitHub*: [246](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L246-L250)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol
+
+77       function setFullWeightDuration(uint256 newFullWeightDuration) public onlyGovernance {
+78           if (newFullWeightDuration > votingPeriod()) {
+79               revert FullWeightDurationGreaterThanVotingPeriod(newFullWeightDuration, votingPeriod());
+80           }
+81   
+82           fullWeightDuration = newFullWeightDuration;
+83           emit FullWeightDurationSet(newFullWeightDuration);
+84:      }
+
+```
+*GitHub*: [77](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L77-L84)
+
+
+### [G&#x2011;26] State variable read in a loop
+The state variable should be cached in a local variable rather than reading it on every iteration of the for-loop, which will replace each Gwarmaccess (**100 gas**) with a much cheaper stack read.
+
+*There are 11 instances of this issue:*
+
+```solidity
+File: src/security-council-mgmt/SecurityCouncilManager.sol
+
+/// @audit MEMBER_REMOVER_ROLE
+107:             _grantRole(MEMBER_REMOVER_ROLE, _roles.memberRemovers[i]);
+
+/// @audit secondCohort
+/// @audit firstCohort
+163:             address[] storage cohort = i == 0 ? firstCohort : secondCohort;
+
+/// @audit securityCouncils
+251:         for (uint256 i = 0; i < securityCouncils.length; i++) {
+
+/// @audit securityCouncils
+292:                     securityCouncils[securityCouncils.length - 1];
+
+/// @audit securityCouncils
+299:                     securityCouncils.length
+
+/// @audit securityCouncils
+284:         for (uint256 i = 0; i < securityCouncils.length; i++) {
+
+/// @audit firstCohort
+339:         for (uint256 i = 0; i < firstCohort.length; i++) {
+
+/// @audit firstCohort
+343:             members[firstCohort.length + i] = secondCohort[i];
+
+/// @audit secondCohort
+342:         for (uint256 i = 0; i < secondCohort.length; i++) {
+
+/// @audit securityCouncils
+392:         for (uint256 i = 0; i < securityCouncils.length; i++) {
+
+```
+*GitHub*: [107](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L107-L107), [163](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L163-L163), [163](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L163-L163), [251](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L251-L251), [292](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L292-L292), [299](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L299-L299), [284](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L284-L284), [339](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L339-L339), [343](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L343-L343), [342](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L342-L342), [392](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L392-L392)
+
+
+### [G&#x2011;27] Using `this` to access functions results in an external call, wasting gas
+External calls have an overhead of **100 gas**, which can be avoided by not referencing the function using `this`. Contracts [are allowed](https://docs.soliditylang.org/en/latest/contracts.html#function-overriding) to override their parents' functions and change the visibility from `external` to `public`, so make this change if it's required in order to call the function internally.
+
+*There are 3 instances of this issue:*
+
+```solidity
+File: src/security-council-mgmt/SecurityCouncilManager.sol
+
+405:         bytes32 salt = this.generateSalt(newMembers, nonce);
+
+440:             salt: this.generateSalt(newMembers, updateNonce),
+
+```
+*GitHub*: [405](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L405-L405), [440](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L440-L440)
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol
+
+128:         (bytes4 selector, bytes memory rest) = this.separateSelector(calldatas[0]);
+
+```
+*GitHub*: [128](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L128-L128)
+
+
+### [G&#x2011;28] `unchecked {}`  can be used on the division of two `uint`s in order to save gas
+The division cannot overflow, since both the numerator and the denominator are non-negative
+
+*There are 3 instances of this issue:*
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol
+
+128:         if ((quorumDenominator() / params.quorumNumeratorValue) > 500) {
+
+```
+*GitHub*: [128](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L128-L128)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/ArbitrumGovernorVotesQuorumFractionUpgradeable.sol
+
+39           return (getPastCirculatingSupply(blockNumber) * quorumNumerator(blockNumber))
+40:              / quorumDenominator();
+
+```
+*GitHub*: [39](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/ArbitrumGovernorVotesQuorumFractionUpgradeable.sol#L39-L40)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol
+
+253:             votes * (blockNumber - fullWeightVotingDeadline_) / decreasingWeightDuration;
+
+```
+*GitHub*: [253](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L253-L253)
+
+
+### [G&#x2011;29] Simple checks for zero can be done using assembly to save gas
+
+
+*There are 10 instances of this issue:*
+
+```solidity
+File: src/UpgradeExecRouteBuilder.sol
+
+72:          if (_l1ArbitrumTimelock == address(0)) {
+
+78:              if (chainAndUpExecLocation.location.upgradeExecutor == address(0)) {
+
+131:             if (upExecLocation.upgradeExecutor == address(0)) {
+
+134:             if (actionDatas[i].length == 0) {
+
+```
+*GitHub*: [72](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L72-L72), [78](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L78-L78), [131](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L131-L131), [134](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L134-L134)
+
+```solidity
+File: src/security-council-mgmt/SecurityCouncilManager.sol
+
+144:         if (_newMember == address(0)) {
+
+184:         if (_member == address(0)) {
+
+243:         if (_securityCouncilData.chainId == 0) {
+
+```
+*GitHub*: [144](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L144-L144), [184](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L184-L184), [243](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L243-L243)
+
+```solidity
+File: src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol
+
+102:         if (dp.nomineeVetter == address(0)) {
+
+```
+*GitHub*: [102](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L102-L102)
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol
+
+188:         if (electionCount == 0) {
+
+```
+*GitHub*: [188](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L188-L188)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol
+
+116:         if (weight == 0) {
+
+```
+*GitHub*: [116](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L116-L116)
+
+## Disputed Issues
+
+The issues below may be reported by other bots/wardens, but can be penalized/ignored since either the rule or the specified instances are invalid
+
+
+### [D&#x2011;01] ~~`abi.encodePacked()` should not be used with dynamic types when passing the result to a hash function such as `keccak256()`~~
+The cases below do not have consecutive `bytes`/`string` arguments
+
+*There is one instance of this issue:*
+
+```solidity
+File: src/security-council-mgmt/SecurityCouncilManager.sol
+
+375:          return keccak256(abi.encodePacked(_members, nonce));
+
+```
+*GitHub*: [375](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L375)
+
+
+### [D&#x2011;02] ~~SPDX identifier should be the in the first line of a solidity file~~
+It's already on the first line
+
+*There are 20 instances of this issue:*
+
+<details>
+<summary>see instances</summary>
+
+
+```solidity
+File: src/UpgradeExecRouteBuilder.sol
+
+1:    // SPDX-License-Identifier: Apache-2.0
+
+```
+*GitHub*: [1](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L1)
+
+```solidity
+File: src/gov-action-contracts/AIPs/SecurityCouncilMgmt/GovernanceChainSCMgmtActivationAction.sol
+
+1:    // SPDX-License-Identifier: Apache-2.0
+
+```
+*GitHub*: [1](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/GovernanceChainSCMgmtActivationAction.sol#L1)
+
+```solidity
+File: src/gov-action-contracts/AIPs/SecurityCouncilMgmt/L1SCMgmtActivationAction.sol
+
+1:    // SPDX-License-Identifier: Apache-2.0
+
+```
+*GitHub*: [1](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/L1SCMgmtActivationAction.sol#L1)
+
+```solidity
+File: src/gov-action-contracts/AIPs/SecurityCouncilMgmt/NonGovernanceChainSCMgmtActivationAction.sol
+
+1:    // SPDX-License-Identifier: Apache-2.0
+
+```
+*GitHub*: [1](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/NonGovernanceChainSCMgmtActivationAction.sol#L1)
+
+```solidity
+File: src/gov-action-contracts/AIPs/SecurityCouncilMgmt/SecurityCouncilMgmtUpgradeLib.sol
+
+1:    // SPDX-License-Identifier: Apache-2.0
+
+```
+*GitHub*: [1](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/SecurityCouncilMgmtUpgradeLib.sol#L1)
+
+```solidity
+File: src/gov-action-contracts/execution-record/ActionExecutionRecord.sol
+
+1:    // SPDX-License-Identifier: Apache-2.0
+
+```
+*GitHub*: [1](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/execution-record/ActionExecutionRecord.sol#L1)
+
+```solidity
+File: src/gov-action-contracts/execution-record/KeyValueStore.sol
+
+1:    // SPDX-License-Identifier: Apache-2.0
+
+```
+*GitHub*: [1](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/execution-record/KeyValueStore.sol#L1)
+
+```solidity
+File: src/security-council-mgmt/Common.sol
+
+1:    // SPDX-License-Identifier: Apache-2.0
+
+```
+*GitHub*: [1](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/Common.sol#L1)
+
+```solidity
+File: src/security-council-mgmt/SecurityCouncilManager.sol
+
+1:    // SPDX-License-Identifier: Apache-2.0
+
+```
+*GitHub*: [1](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L1)
+
+```solidity
+File: src/security-council-mgmt/SecurityCouncilMemberSyncAction.sol
+
+1:    // SPDX-License-Identifier: Apache-2.0
+
+```
+*GitHub*: [1](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilMemberSyncAction.sol#L1)
+
+```solidity
+File: src/security-council-mgmt/SecurityCouncilMgmtUtils.sol
+
+1:    // SPDX-License-Identifier: Apache-2.0
+
+```
+*GitHub*: [1](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilMgmtUtils.sol#L1)
+
+```solidity
+File: src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol
+
+1:    // SPDX-License-Identifier: Apache-2.0
+
+```
+*GitHub*: [1](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L1)
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol
+
+1:    // SPDX-License-Identifier: Apache-2.0
+
+```
+*GitHub*: [1](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L1)
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol
+
+1:    // SPDX-License-Identifier: Apache-2.0
+
+```
+*GitHub*: [1](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L1)
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol
+
+1:    // SPDX-License-Identifier: Apache-2.0
+
+```
+*GitHub*: [1](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L1)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/ArbitrumGovernorVotesQuorumFractionUpgradeable.sol
+
+1:    // SPDX-License-Identifier: Apache-2.0
+
+```
+*GitHub*: [1](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/ArbitrumGovernorVotesQuorumFractionUpgradeable.sol#L1)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/ElectionGovernor.sol
+
+1:    // SPDX-License-Identifier: Apache-2.0
+
+```
+*GitHub*: [1](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/ElectionGovernor.sol#L1)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol
+
+1:    // SPDX-License-Identifier: Apache-2.0
+
+```
+*GitHub*: [1](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L1)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol
+
+1:    // SPDX-License-Identifier: Apache-2.0
+
+```
+*GitHub*: [1](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol#L1)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorTiming.sol
+
+1:    // SPDX-License-Identifier: Apache-2.0
+
+```
+*GitHub*: [1](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorTiming.sol#L1)
+
+</details>
+
+### [D&#x2011;03] ~~Inconsistent comment spacing~~
+URLs are not comments
+
+*There is one instance of this issue:*
+
+```solidity
+File: src/security-council-mgmt/SecurityCouncilManager.sol
+
+76:       ///         Value is defined in L1ArbitrumTimelock contract https://etherscan.io/address/0xE6841D92B0C345144506576eC13ECf5103aC7f49#readProxyContract#F5
+
+```
+*GitHub*: [76](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L76)
+
+
+### [D&#x2011;04] ~~Overly complicated arithmetic~~
+At least one bot is incorrectly flagging code comments as 'complicated arithmetic'
+
+*There are 6 instances of this issue:*
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol
+
+117:          address[] memory, /* targets */
+
+118:          uint256[] memory, /* values */
+
+120:          bytes32 /* descriptionHash */
+
+```
+*GitHub*: [117](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L117), [118](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L118), [120](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L120)
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol
+
+326:          address[] memory, /* targets */
+
+327:          uint256[] memory, /* values */
+
+329:          bytes32 /*descriptionHash*/
+
+```
+*GitHub*: [326](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L326), [327](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L327), [329](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L329)
+
+
+### [D&#x2011;05] ~~Public functions not used internally can be marked as external to save gas~~
+After Solidity version 0.6.9 both `public` and `external` functions save the [same amount of gas](https://ethereum.stackexchange.com/a/107939), and since these files are >0.6.9, these findings are invalid
+
+*There are 34 instances of this issue:*
+
+<details>
+<summary>see instances</summary>
+
+
+```solidity
+File: src/UpgradeExecRouteBuilder.sol
+
+186       function createActionRouteDataWithDefaults(
+187           uint256[] memory chainIds,
+188           address[] memory actionAddresses,
+189           bytes32 timelockSalt
+190:      ) public view returns (address, bytes memory) {
+
+```
+*GitHub*: [186](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L186-L190)
+
+```solidity
+File: src/security-council-mgmt/SecurityCouncilManager.sol
+
+349:      function securityCouncilsLength() public view returns (uint256) {
+
+```
+*GitHub*: [349](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L349)
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol
+
+48        function initialize(
+49            ISecurityCouncilNomineeElectionGovernor _nomineeElectionGovernor,
+50            ISecurityCouncilManager _securityCouncilManager,
+51            IVotesUpgradeable _token,
+52            address _owner,
+53            uint256 _votingPeriod,
+54            uint256 _fullWeightDuration
+55:       ) public initializer {
+
+138       function proposalThreshold()
+139           public
+140           pure
+141           override(GovernorSettingsUpgradeable, GovernorUpgradeable)
+142:          returns (uint256)
+
+181       function propose(address[] memory, uint256[] memory, bytes[] memory, string memory)
+182           public
+183           virtual
+184           override
+185:          returns (uint256)
+
+191:      function castVote(uint256, uint8) public virtual override returns (uint256) {
+
+196       function castVoteWithReason(uint256, uint8, string calldata)
+197           public
+198           virtual
+199           override
+200:          returns (uint256)
+
+206       function castVoteBySig(uint256, uint8, uint8, bytes32, bytes32)
+207           public
+208           virtual
+209           override
+210:          returns (uint256)
+
+```
+*GitHub*: [48](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L48-L55), [138](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L138-L142), [181](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L181-L185), [191](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L191), [196](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L196-L200), [206](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L206-L210)
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol
+
+58        function initialize(
+59            uint256 _voteSuccessNumerator,
+60            ISecurityCouncilManager _securityCouncilManager,
+61            IVotesUpgradeable _token,
+62            address _owner,
+63            uint256 _votingDelay,
+64            uint256 _votingPeriod,
+65            uint256 _quorumNumerator,
+66            uint256 _proposalThreshold,
+67            uint64 _minPeriodAfterQuorum,
+68            uint256 _proposalExpirationBlocks
+69:       ) public initializer {
+
+106       function propose(
+107           address[] memory targets,
+108           uint256[] memory values,
+109           bytes[] memory calldatas,
+110           string memory description
+111:      ) public override returns (uint256) {
+
+178:      function setVoteSuccessNumerator(uint256 _voteSuccessNumerator) public onlyOwner {
+
+191       function COUNTING_MODE()
+192           public
+193           pure
+194           virtual
+195           override(GovernorCountingSimpleUpgradeable, IGovernorUpgradeable)
+196:          returns (string memory)
+
+213       function proposalThreshold()
+214           public
+215           view
+216           override(GovernorUpgradeable, GovernorSettingsUpgradeable)
+217:          returns (uint256)
+
+```
+*GitHub*: [58](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L58-L69), [106](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L106-L111), [178](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L178), [191](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L191-L196), [213](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L213-L217)
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol
+
+103:      function initialize(InitParams memory params) public initializer {
+
+357       function proposalThreshold()
+358           public
+359           view
+360           virtual
+361           override(GovernorSettingsUpgradeable, GovernorUpgradeable)
+362:          returns (uint256)
+
+368:      function isCompliantNominee(uint256 proposalId, address account) public view returns (bool) {
+
+373:      function compliantNominees(uint256 proposalId) public view returns (address[] memory) {
+
+388:      function currentCohort() public view returns (Cohort) {
+
+400:      function isExcluded(uint256 proposalId, address possibleExcluded) public view returns (bool) {
+
+405:      function excludedNomineeCount(uint256 proposalId) public view returns (uint256) {
+
+410       function isContender(uint256 proposalId, address possibleContender)
+411           public
+412           view
+413           virtual
+414           override
+415:          returns (bool)
+
+423       function propose(address[] memory, uint256[] memory, bytes[] memory, string memory)
+424           public
+425           virtual
+426           override
+427:          returns (uint256)
+
+433:      function castVote(uint256, uint8) public virtual override returns (uint256) {
+
+438       function castVoteWithReason(uint256, uint8, string calldata)
+439           public
+440           virtual
+441           override
+442:          returns (uint256)
+
+448       function castVoteBySig(uint256, uint8, uint8, bytes32, bytes32)
+449           public
+450           virtual
+451           override
+452:          returns (uint256)
+
+```
+*GitHub*: [103](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L103), [357](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L357-L362), [368](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L368), [373](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L373), [388](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L388), [400](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L400), [405](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L405), [410](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L410-L415), [423](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L423-L427), [433](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L433), [438](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L438-L442), [448](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L448-L452)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol
+
+77:       function setFullWeightDuration(uint256 newFullWeightDuration) public onlyGovernance {
+
+143:      function COUNTING_MODE() public pure virtual override returns (string memory) {
+
+153:      function weightReceived(uint256 proposalId, address nominee) public view returns (uint256) {
+
+158:      function hasVoted(uint256 proposalId, address account) public view override returns (bool) {
+
+```
+*GitHub*: [77](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L77), [143](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L143), [153](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L153), [158](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L158)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol
+
+128:      function COUNTING_MODE() public pure virtual override returns (string memory) {
+
+133:      function hasVoted(uint256 proposalId, address account) public view override returns (bool) {
+
+148:      function nominees(uint256 proposalId) public view returns (address[] memory) {
+
+153:      function votesUsed(uint256 proposalId, address account) public view returns (uint256) {
+
+158:      function votesReceived(uint256 proposalId, address contender) public view returns (uint256) {
+
+```
+*GitHub*: [128](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol#L128), [133](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol#L133), [148](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol#L148), [153](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol#L153), [158](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol#L158)
+
+</details>
+
+### [D&#x2011;06] ~~Shorten the array rather than copying to a new one~~
+None of these examples are of filtering out entries from an array.
+
+*There are 11 instances of this issue:*
+
+```solidity
+File: src/UpgradeExecRouteBuilder.sol
+
+191          uint256[] memory values = new uint256[](chainIds.length);
+192          bytes[] memory actionDatas = new bytes[](chainIds.length);
+193          for (uint256 i = 0; i < chainIds.length; i++) {
+194:             actionDatas[i] = DEFAULT_GOV_ACTION_CALLDATA;
+
+192          bytes[] memory actionDatas = new bytes[](chainIds.length);
+193          for (uint256 i = 0; i < chainIds.length; i++) {
+194              actionDatas[i] = DEFAULT_GOV_ACTION_CALLDATA;
+195:             values[i] = DEFAULT_VALUE;
+
+```
+*GitHub*: [191](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L191-L194), [192](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L192-L195)
+
+```solidity
+File: src/security-council-mgmt/SecurityCouncilManager.sol
+
+338          address[] memory members = new address[](firstCohort.length + secondCohort.length);
+339          for (uint256 i = 0; i < firstCohort.length; i++) {
+340              members[i] = firstCohort[i];
+341:         }
+
+388          address[] memory actionAddresses = new address[](securityCouncils.length);
+389          bytes[] memory actionDatas = new bytes[](securityCouncils.length);
+390          uint256[] memory chainIds = new uint256[](securityCouncils.length);
+391: 
+
+389          bytes[] memory actionDatas = new bytes[](securityCouncils.length);
+390          uint256[] memory chainIds = new uint256[](securityCouncils.length);
+391  
+392:         for (uint256 i = 0; i < securityCouncils.length; i++) {
+
+390          uint256[] memory chainIds = new uint256[](securityCouncils.length);
+391  
+392          for (uint256 i = 0; i < securityCouncils.length; i++) {
+393:             SecurityCouncilData memory securityCouncilData = securityCouncils[i];
+
+```
+*GitHub*: [338](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L338-L341), [388](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L388-L391), [389](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L389-L392), [390](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L390-L393)
+
+```solidity
+File: src/security-council-mgmt/SecurityCouncilMgmtUtils.sol
+
+19           address[] memory intermediate = new address[](input.length);
+20           uint256 intermediateLength = 0;
+21   
+22:          for (uint256 i = 0; i < input.length; i++) {
+
+30           address[] memory output = new address[](intermediateLength);
+31           for (uint256 i = 0; i < intermediateLength; i++) {
+32               output[i] = intermediate[i];
+33:          }
+
+```
+*GitHub*: [19](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilMgmtUtils.sol#L19-L22), [30](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilMgmtUtils.sol#L30-L33)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol
+
+179          uint240[] memory weights = new uint240[](nominees.length);
+180          ElectionInfo storage election = _elections[proposalId];
+181          for (uint256 i = 0; i < nominees.length; i++) {
+182:             weights[i] = election.weightReceived[nominees[i]];
+
+203          uint256[] memory topNomineesPacked = new uint256[](k);
+204  
+205          for (uint16 i = 0; i < nominees.length; i++) {
+206:             uint256 packed = (uint256(weights[i]) << 16) | i;
+
+214          address[] memory topNomineesAddresses = new address[](k);
+215          for (uint16 i = 0; i < k; i++) {
+216              topNomineesAddresses[i] = nominees[uint16(topNomineesPacked[i])];
+217:         }
+
+```
+*GitHub*: [179](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L179-L182), [203](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L203-L206), [214](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L214-L217)
+
+
+### [D&#x2011;07] ~~`require()` / `revert()` statements should have descriptive reason strings~~
+These are not `revert()` calls, so these findings are invalid
+
+*There are 92 instances of this issue:*
+
+<details>
+<summary>see instances</summary>
+
+
+```solidity
+File: src/UpgradeExecRouteBuilder.sol
+
+73:              revert ZeroAddress();
+
+79:                  revert ZeroAddress();
+
+82:                  revert UpgradeExecAlreadyExists(chainAndUpExecLocation.chainId);
+
+114:             revert ParamLengthMismatch(chainIds.length, actionAddresses.length);
+
+117:             revert ParamLengthMismatch(chainIds.length, actionValues.length);
+
+120:             revert ParamLengthMismatch(chainIds.length, actionDatas.length);
+
+132:                 revert UpgadeExecDoesntExist(chainIds[i]);
+
+135:                 revert EmptyActionBytesData(actionDatas);
+
+```
+*GitHub*: [73](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L73-L73), [79](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L79-L79), [82](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L82-L82), [114](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L114-L114), [117](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L117-L117), [120](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L120-L120), [132](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L132-L132), [135](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L135-L135)
+
+```solidity
+File: src/security-council-mgmt/SecurityCouncilManager.sol
+
+98:              revert CohortLengthMismatch(_firstCohort, _secondCohort);
+
+113:             revert NotAContract({account: _l2CoreGovTimelock});
+
+129:             revert InvalidNewCohortLength({cohort: _newCohort, cohortSize: cohortSize});
+
+145:             revert ZeroAddress();
+
+149:             revert CohortFull({cohort: _cohort});
+
+152:             revert MemberInCohort({member: _newMember, cohort: Cohort.FIRST});
+
+155:             revert MemberInCohort({member: _newMember, cohort: Cohort.SECOND});
+
+172:         revert NotAMember({member: _member});
+
+185:             revert ZeroAddress();
+
+223:             revert ZeroAddress();
+
+233:             revert MaxSecurityCouncils(securityCouncils.length);
+
+240:             revert ZeroAddress();
+
+244:             revert SecurityCouncilZeroChainID(_securityCouncilData);
+
+248:             revert SecurityCouncilNotInRouter(_securityCouncilData);
+
+258:                 revert SecurityCouncilAlreadyInRouter(_securityCouncilData);
+
+304:         revert SecurityCouncilNotInManager(_securityCouncilData);
+
+319:             revert NotAContract({account: routerAddress});
+
+```
+*GitHub*: [98](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L98-L98), [113](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L113-L113), [129](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L129-L129), [145](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L145-L145), [149](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L149-L149), [152](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L152-L152), [155](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L155-L155), [172](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L172-L172), [185](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L185-L185), [223](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L223-L223), [233](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L233-L233), [240](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L240-L240), [244](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L244-L244), [248](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L248-L248), [258](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L258-L258), [304](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L304-L304), [319](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L319-L319)
+
+```solidity
+File: src/security-council-mgmt/SecurityCouncilMemberSyncAction.sol
+
+112          revert PreviousOwnerNotFound({
+113              targetOwner: _owner,
+114              securityCouncil: address(securityCouncil)
+115:         });
+
+133:             revert ExecFromModuleError({data: data, securityCouncil: address(securityCouncil)});
+
+```
+*GitHub*: [112](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilMemberSyncAction.sol#L112-L115), [133](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilMemberSyncAction.sol#L133-L133)
+
+```solidity
+File: src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol
+
+87:              revert NotAContract(dp.govChainEmergencySecurityCouncil);
+
+91:              revert NotAContract(dp.govChainProxyAdmin);
+
+95:              revert NotAContract(dp.l2UpgradeExecutor);
+
+99:              revert NotAContract(dp.arbToken);
+
+103:             revert ZeroAddress();
+
+108:             revert InvalidCohortsSize(owners.length, dp.firstCohort.length, dp.secondCohort.length);
+
+113:                 revert AddressNotInCouncil(owners, dp.firstCohort[i]);
+
+119:                 revert AddressNotInCouncil(owners, dp.secondCohort[i]);
+
+```
+*GitHub*: [87](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L87-L87), [91](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L91-L91), [95](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L95-L95), [99](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L99-L99), [103](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L103-L103), [108](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L108-L108), [113](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L113-L113), [119](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L119-L119)
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol
+
+57:              revert InvalidDurations(_fullWeightDuration, _votingPeriod);
+
+69:              revert NotAContract(address(_nomineeElectionGovernor));
+
+73:              revert NotAContract(address(_securityCouncilManager));
+
+80:              revert OnlyNomineeElectionGovernor();
+
+187:         revert ProposeDisabled();
+
+192:         revert CastVoteDisabled();
+
+202:         revert CastVoteDisabled();
+
+212:         revert CastVoteDisabled();
+
+```
+*GitHub*: [57](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L57-L57), [69](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L69-L69), [73](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L73-L73), [80](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L80-L80), [187](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L187-L187), [192](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L192-L192), [202](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L202-L202), [212](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L212-L212)
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol
+
+79:              revert NotAContract(address(_securityCouncilManager));
+
+113:             revert InvalidOperationsLength(targets.length);
+
+118:             revert TargetNotManager(targets[0]);
+
+121:             revert ValueNotZero(values[0]);
+
+125:             revert UnexpectedCalldataLength(calldatas[0].length);
+
+130:             revert CallNotRemoveMember(selector, ISecurityCouncilManager.removeMember.selector);
+
+138:             revert MemberNotFound(memberToRemove);
+
+171:             revert AbstainDisallowed();
+
+184:             revert InvalidVoteSuccessNumerator(_voteSuccessNumerator);
+
+```
+*GitHub*: [79](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L79-L79), [113](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L113-L113), [118](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L118-L118), [121](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L121-L121), [125](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L125-L125), [130](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L130-L130), [138](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L138-L138), [171](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L171-L171), [184](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L184-L184)
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol
+
+116:             revert NotAContract(address(params.securityCouncilManager));
+
+120:             revert NotAContract(address(params.securityCouncilMemberElectionGovernor));
+
+129:             revert QuorumNumeratorTooLow(params.quorumNumeratorValue);
+
+136:             revert OnlyNomineeVetter();
+
+146:             revert ProposalNotSucceededState(state_);
+
+152:             revert ProposalNotInVettingPeriod(block.number, vettingDeadline);
+
+168:             revert CreateTooEarly(block.timestamp, thisElectionStartTs);
+
+207:             revert LastMemberElectionNotExecuted(prevProposalId);
+
+222:             revert AlreadyContender(msg.sender);
+
+227:             revert ProposalNotActive(state_);
+
+237:             revert AccountInOtherCohort(otherCohort(), msg.sender);
+
+273:             revert NomineeAlreadyExcluded(nominee);
+
+276:             revert NotNominee(nominee);
+
+293:             revert ProposalNotSucceededState(state_);
+
+297:             revert NomineeAlreadyAdded(account);
+
+303:             revert CompliantNomineeTargetHit(cnCount, cohortSize);
+
+313:             revert AccountInOtherCohort(otherCohort(), account);
+
+334:             revert ProposalInVettingPeriod(block.number, vettingDeadline);
+
+340:             revert InsufficientCompliantNomineeCount(cnCount, cohortSize);
+
+350:             revert ProposalIdMismatch(proposalId, memberElectionProposalId);
+
+429:         revert ProposeDisabled();
+
+434:         revert CastVoteDisabled();
+
+444:         revert CastVoteDisabled();
+
+454:         revert CastVoteDisabled();
+
+```
+*GitHub*: [116](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L116-L116), [120](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L120-L120), [129](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L129-L129), [136](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L136-L136), [146](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L146-L146), [152](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L152-L152), [168](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L168-L168), [207](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L207-L207), [222](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L222-L222), [227](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L227-L227), [237](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L237-L237), [273](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L273-L273), [276](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L276-L276), [293](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L293-L293), [297](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L297-L297), [303](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L303-L303), [313](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L313-L313), [334](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L334-L334), [340](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L340-L340), [350](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L350-L350), [429](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L429-L429), [434](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L434-L434), [444](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L444-L444), [454](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L454-L454)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol
+
+79:              revert FullWeightDurationGreaterThanVotingPeriod(newFullWeightDuration, votingPeriod());
+
+103:             revert InvalidSupport(support);
+
+107:             revert UnexpectedParamsLength(params.length);
+
+112:             revert NotCompliantNominee(nominee);
+
+117:             revert ZeroWeightVote(block.number, votes);
+
+123:             revert InsufficientVotes(prevVotesUsed, votes, availableVotes);
+
+197:             revert LengthsDontMatch(nominees.length, weights.length);
+
+200:             revert NotEnoughNominees(nominees.length, k);
+
+261:             revert UintTooLarge(x);
+
+```
+*GitHub*: [79](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L79-L79), [103](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L103-L103), [107](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L107-L107), [112](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L112-L112), [117](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L117-L117), [123](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L123-L123), [197](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L197-L197), [200](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L200-L200), [261](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L261-L261)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol
+
+70:              revert InvalidSupport(support);
+
+74:              revert UnexpectedParamsLength(params.length);
+
+81:              revert NotEligibleContender(contender);
+
+84:              revert NomineeAlreadyAdded(contender);
+
+91:              revert InsufficientTokens(votes, prevVotesUsed, weight);
+
+```
+*GitHub*: [70](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol#L70-L70), [74](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol#L74-L74), [81](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol#L81-L81), [84](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol#L84-L84), [91](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol#L91-L91)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorTiming.sol
+
+42               revert InvalidStartDate(
+43                   _firstNominationStartDate.year,
+44                   _firstNominationStartDate.month,
+45                   _firstNominationStartDate.day,
+46                   _firstNominationStartDate.hour
+47:              );
+
+61:              revert StartDateTooEarly(startTimestamp, block.timestamp);
+
+```
+*GitHub*: [42](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorTiming.sol#L42-L47), [61](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorTiming.sol#L61-L61)
+
+</details>
+
+### [D&#x2011;08] ~~Use delete instead of setting mapping/state variable to zero, to save gas~~
+Using delete instead of assigning zero to state variables does not save any extra gas with the optimizer [on](https://gist.github.com/IllIllI000/ef8ec3a70aede7f12433fe63dc418515#with-the-optimizer-set-at-200-runs) (saves 5-8 gas with optimizer completely off), so this finding is invalid, especially since if they were interested in gas savings, they'd have the optimizer enabled.
+
+*There is one instance of this issue:*
+
+```solidity
+File: src/UpgradeExecRouteBuilder.sol
+
+150:                 schedValues[i] = 0;
+
+```
+*GitHub*: [150](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L150-L150)
+
+
+### [D&#x2011;09] ~~Events that mark critical parameter changes should contain both the old and the new value~~
+These are not critical parameter changes
+
+*There are 16 instances of this issue:*
+
+<details>
+<summary>see instances</summary>
+
+
+```solidity
+File: src/security-council-mgmt/SecurityCouncilManager.sol
+
+140:         emit CohortReplaced(_newCohort, _cohort);
+
+179:         emit MemberAdded(_newMember, _cohort);
+
+189:         emit MemberRemoved({member: _member, cohort: cohort});
+
+198          emit MemberReplaced({
+199              replacedMember: _memberToReplace,
+200              newMember: _newMember,
+201              cohort: cohort
+202:         });
+
+211          emit MemberRotated({
+212              replacedAddress: _currentAddress,
+213              newAddress: _newAddress,
+214              cohort: cohort
+215:         });
+
+263          emit SecurityCouncilAdded(
+264              _securityCouncilData.securityCouncil,
+265              _securityCouncilData.updateAction,
+266              securityCouncils.length
+267:         );
+
+296                  emit SecurityCouncilRemoved(
+297                      securityCouncilData.securityCouncil,
+298                      securityCouncilData.updateAction,
+299                      securityCouncils.length
+300:                 );
+
+```
+*GitHub*: [140](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L140-L140), [179](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L179-L179), [189](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L189-L189), [198](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L198-L202), [211](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L211-L215), [263](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L263-L267), [296](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L296-L300)
+
+```solidity
+File: src/security-council-mgmt/SecurityCouncilMemberSyncAction.sol
+
+46:              emit UpdateNonceTooLow(_securityCouncil, updateNonce, _nonce);
+
+```
+*GitHub*: [46](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilMemberSyncAction.sol#L46-L46)
+
+```solidity
+File: src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol
+
+187:         emit ContractsDeployed(deployedContracts);
+
+```
+*GitHub*: [187](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L187-L187)
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol
+
+141:         emit MemberRemovalProposed(memberToRemove, description);
+
+```
+*GitHub*: [141](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L141-L141)
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol
+
+242:         emit ContenderAdded(proposalId, msg.sender);
+
+282:         emit NomineeExcluded(proposalId, nominee);
+
+```
+*GitHub*: [242](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L242-L242), [282](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L282-L282)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol
+
+73:          emit FullWeightDurationSet(initialFullWeightDuration);
+
+130          emit VoteCastForNominee({
+131              voter: account,
+132              proposalId: proposalId,
+133              nominee: nominee,
+134              votes: votes,
+135              weight: weight,
+136              totalUsedVotes: prevVotesUsed + votes,
+137              usableVotes: availableVotes,
+138              weightReceived: election.weightReceived[nominee]
+139:         });
+
+```
+*GitHub*: [73](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L73-L73), [130](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L130-L139)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol
+
+110          emit VoteCastForContender({
+111              proposalId: proposalId,
+112              voter: account,
+113              contender: contender,
+114              votes: actualVotes,
+115              totalUsedVotes: prevVotesUsed + actualVotes,
+116              usableVotes: weight
+117:         });
+
+124:         emit NewNominee(proposalId, account);
+
+```
+*GitHub*: [110](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol#L110-L117), [124](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol#L124-L124)
+
+</details>
+
+### [D&#x2011;10] ~~Empty function body~~
+These constructors have calls to base contracts, so the empty function body cannot be removed
+
+*There is one instance of this issue:*
+
+```solidity
+File: src/security-council-mgmt/SecurityCouncilMemberSyncAction.sol
+
+21       constructor(KeyValueStore _store)
+22           ActionExecutionRecord(_store, "SecurityCouncilMemberSyncAction")
+23:      {}
+
+```
+*GitHub*: [21](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilMemberSyncAction.sol#L21-L23)
+
+
+### [D&#x2011;11] ~~Cast to `bytes` or `bytes32` for clearer semantic meaning~~
+These calls to `abi.encodePacked()` have more than one argument
+
+*There is one instance of this issue:*
+
+```solidity
+File: src/security-council-mgmt/SecurityCouncilManager.sol
+
+375:         return keccak256(abi.encodePacked(_members, nonce));
+
+```
+*GitHub*: [375](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L375-L375)
+
+
+### [D&#x2011;12] ~~`abi.encode()` is less efficient than `abi.encodepacked()`~~
+`abi.encodePacked()` does not always save gas over `abi.encode()` and in fact often costs [more](https://gist.github.com/IllIllI000/2ee970e4f05af4d2a3d89a56b5cc93a5) gas. The [comparison](https://github.com/ConnorBlockchain/Solidity-Encode-Gas-Comparison) sometimes linked to itself even shows that when addresses are involved, the packed flavor costs more gas.
+
+*There are 2 instances of this issue:*
+
+```solidity
+File: src/UpgradeExecRouteBuilder.sol
+
+151:                 schedData[i] = abi.encode(
+
+```
+*GitHub*: [151](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L151-L151)
+
+```solidity
+File: src/gov-action-contracts/execution-record/KeyValueStore.sol
+
+27:          return uint256(keccak256(abi.encode(owner, key)));
+
+```
+*GitHub*: [27](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/execution-record/KeyValueStore.sol#L27-L27)
+
+
+### [D&#x2011;13] ~~Event names should use CamelCase~~
+The instances below are already CamelCase (events are supposed to use CamelCase, not lowerCamelCase)
+
+*There are 19 instances of this issue:*
+
+<details>
+<summary>see instances</summary>
+
+
+```solidity
+File: src/security-council-mgmt/SecurityCouncilManager.sol
+
+33:      event CohortReplaced(address[] newCohort, Cohort indexed cohort);
+
+34:      event MemberAdded(address indexed newMember, Cohort indexed cohort);
+
+35:      event MemberRemoved(address indexed member, Cohort indexed cohort);
+
+36:      event MemberReplaced(address indexed replacedMember, address indexed newMember, Cohort cohort);
+
+37:      event MemberRotated(address indexed replacedAddress, address indexed newAddress, Cohort cohort);
+
+38       event SecurityCouncilAdded(
+39           address securityCouncil, address updateAction, uint256 securityCouncilsLength
+40:      );
+
+41       event SecurityCouncilRemoved(
+42           address securityCouncil, address updateAction, uint256 securityCouncilsLength
+43:      );
+
+44:      event UpgradeExecRouteBuilderSet(address UpgradeExecRouteBuilder);
+
+```
+*GitHub*: [33](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L33-L33), [34](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L34-L34), [35](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L35-L35), [36](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L36-L36), [37](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L37-L37), [38](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L38-L40), [41](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L41-L43), [44](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L44-L44)
+
+```solidity
+File: src/security-council-mgmt/SecurityCouncilMemberSyncAction.sol
+
+14       event UpdateNonceTooLow(
+15           address indexed securityCouncil, uint256 currrentNonce, uint256 providedNonce
+16:      );
+
+```
+*GitHub*: [14](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilMemberSyncAction.sol#L14-L16)
+
+```solidity
+File: src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol
+
+56:      event ContractsDeployed(DeployedContracts deployedContracts);
+
+```
+*GitHub*: [56](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L56-L56)
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol
+
+32:      event VoteSuccessNumeratorSet(uint256 indexed voteSuccessNumerator);
+
+33:      event MemberRemovalProposed(address memberToRemove, string description);
+
+```
+*GitHub*: [32](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L32-L32), [33](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L33-L33)
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol
+
+76:      event NomineeVetterChanged(address indexed oldNomineeVetter, address indexed newNomineeVetter);
+
+77:      event ContenderAdded(uint256 indexed proposalId, address indexed contender);
+
+78:      event NomineeExcluded(uint256 indexed proposalId, address indexed nominee);
+
+```
+*GitHub*: [76](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L76-L76), [77](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L77-L77), [78](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L78-L78)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol
+
+42       event VoteCastForNominee(
+43           address indexed voter,
+44           uint256 indexed proposalId,
+45           address indexed nominee,
+46           uint256 votes,
+47           uint256 weight,
+48           uint256 totalUsedVotes,
+49           uint256 usableVotes,
+50           uint256 weightReceived
+51:      );
+
+53:      event FullWeightDurationSet(uint256 newFullWeightDuration);
+
+```
+*GitHub*: [42](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L42-L51), [53](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L53-L53)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol
+
+35       event VoteCastForContender(
+36           uint256 indexed proposalId,
+37           address indexed voter,
+38           address indexed contender,
+39           uint256 votes,
+40           uint256 totalUsedVotes,
+41           uint256 usableVotes
+42:      );
+
+44:      event NewNominee(uint256 indexed proposalId, address indexed nominee);
+
+```
+*GitHub*: [35](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol#L35-L42), [44](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol#L44-L44)
+
+</details>
+
+### [D&#x2011;14] ~~`internal` functions not called by the contract should be removed~~
+These functions are referenced by other contracts extending the current one
+
+*There are 11 instances of this issue:*
+
+<details>
+<summary>see instances</summary>
+
+
+```solidity
+File: src/gov-action-contracts/AIPs/SecurityCouncilMgmt/SecurityCouncilMgmtUpgradeLib.sol
+
+8        function replaceEmergencySecurityCouncil(
+9            IGnosisSafe _prevSecurityCouncil,
+10           IGnosisSafe _newSecurityCouncil,
+11           uint256 _threshold,
+12           IUpgradeExecutor _upgradeExecutor
+13:      ) internal {
+
+29       function requireSafesEquivalent(
+30           IGnosisSafe _safe1,
+31           IGnosisSafe safe2,
+32           uint256 _expectedThreshold
+33:      ) internal view {
+
+```
+*GitHub*: [8](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/SecurityCouncilMgmtUpgradeLib.sol#L8-L13), [29](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/SecurityCouncilMgmtUpgradeLib.sol#L29-L33)
+
+```solidity
+File: src/gov-action-contracts/execution-record/ActionExecutionRecord.sol
+
+25:      function _set(uint256 key, uint256 value) internal {
+
+31:      function _get(uint256 key) internal view returns (uint256) {
+
+```
+*GitHub*: [25](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/execution-record/ActionExecutionRecord.sol#L25-L25), [31](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/execution-record/ActionExecutionRecord.sol#L31-L31)
+
+```solidity
+File: src/security-council-mgmt/SecurityCouncilMgmtUtils.sol
+
+5:       function isInArray(address addr, address[] memory arr) internal pure returns (bool) {
+
+15       function filterAddressesWithExcludeList(
+16           address[] memory input,
+17           mapping(address => bool) storage excludeList
+18:      ) internal view returns (address[] memory) {
+
+```
+*GitHub*: [5](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilMgmtUtils.sol#L5-L5), [15](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilMgmtUtils.sol#L15-L18)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/ArbitrumGovernorVotesQuorumFractionUpgradeable.sol
+
+24       function __ArbitrumGovernorVotesQuorumFraction_init(uint256 quorumNumeratorValue)
+25           internal
+26           onlyInitializing
+27:      {
+
+```
+*GitHub*: [24](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/ArbitrumGovernorVotesQuorumFractionUpgradeable.sol#L24-L27)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/ElectionGovernor.sol
+
+34:      function extractElectionIndex(bytes[] memory callDatas) internal pure returns (uint256) {
+
+```
+*GitHub*: [34](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/ElectionGovernor.sol#L34-L34)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol
+
+68       function __SecurityCouncilMemberElectionGovernorCounting_init(uint256 initialFullWeightDuration)
+69           internal
+70           onlyInitializing
+71:      {
+
+```
+*GitHub*: [68](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L68-L71)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol
+
+52:      function __SecurityCouncilNomineeElectionGovernorCounting_init() internal onlyInitializing {}
+
+```
+*GitHub*: [52](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol#L52-L52)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorTiming.sol
+
+28       function __SecurityCouncilNomineeElectionGovernorTiming_init(
+29           Date memory _firstNominationStartDate,
+30           uint256 _nomineeVettingDuration
+31:      ) internal onlyInitializing {
+
+```
+*GitHub*: [28](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorTiming.sol#L28-L31)
+
+</details>
+
+### [D&#x2011;15] ~~Change `public` to `external` for functions that are not called internally~~
+These functions are referenced by modifiers
+
+*There is one instance of this issue:*
+
+```solidity
+File: src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorTiming.sol
+
+69:      function proposalVettingDeadline(uint256 proposalId) public view returns (uint256) {
+
+```
+*GitHub*: [69](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorTiming.sol#L69-L69)
+
+
+### [D&#x2011;16] ~~Initialization can be front-run~~
+These initializers are called by other contracts in the project, and thus cannot be front-run
+
+*There are 3 instances of this issue:*
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol
+
+48       function initialize(
+49           ISecurityCouncilNomineeElectionGovernor _nomineeElectionGovernor,
+50           ISecurityCouncilManager _securityCouncilManager,
+51           IVotesUpgradeable _token,
+52           address _owner,
+53           uint256 _votingPeriod,
+54           uint256 _fullWeightDuration
+55:      ) public initializer {
+
+```
+*GitHub*: [48](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L48-L55)
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol
+
+58       function initialize(
+59           uint256 _voteSuccessNumerator,
+60           ISecurityCouncilManager _securityCouncilManager,
+61           IVotesUpgradeable _token,
+62           address _owner,
+63           uint256 _votingDelay,
+64           uint256 _votingPeriod,
+65           uint256 _quorumNumerator,
+66           uint256 _proposalThreshold,
+67           uint64 _minPeriodAfterQuorum,
+68           uint256 _proposalExpirationBlocks
+69:      ) public initializer {
+
+```
+*GitHub*: [58](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L58-L69)
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol
+
+103:     function initialize(InitParams memory params) public initializer {
+
+```
+*GitHub*: [103](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L103-L103)
+
+
+### [D&#x2011;17] ~~Use multiple `require()` and `if` statements instead of `&&`~~
+The suggestion in this rule is not logically equivalent for if-statements, and doesn't seem more readable for `require()`s either
+
+*There are 3 instances of this issue:*
+
+```solidity
+File: src/security-council-mgmt/SecurityCouncilManager.sol
+
+255                  existantSecurityCouncil.chainId == _securityCouncilData.chainId
+256                      && existantSecurityCouncil.securityCouncil == _securityCouncilData.securityCouncil
+257              ) {
+258:                 revert SecurityCouncilAlreadyInRouter(_securityCouncilData);
+
+287                  securityCouncilData.securityCouncil == _securityCouncilData.securityCouncil
+288                      && securityCouncilData.chainId == _securityCouncilData.chainId
+289                      && securityCouncilData.updateAction == _securityCouncilData.updateAction
+290              ) {
+291:                 SecurityCouncilData storage lastSecurityCouncil =
+
+```
+*GitHub*: [255](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L255-L258), [287](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L287-L291)
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol
+
+135              !securityCouncilManager.firstCohortIncludes(memberToRemove)
+136                  && !securityCouncilManager.secondCohortIncludes(memberToRemove)
+137          ) {
+138:             revert MemberNotFound(memberToRemove);
+
+```
+*GitHub*: [135](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L135-L138)
+
+
+### [D&#x2011;18] ~~Use `@inheritdoc` rather than using a non-standard annotation~~
+
+
+*There are 27 instances of this issue:*
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol
+
+112      /// @dev    `GovernorUpgradeable` function to execute a proposal overridden to handle member elections.
+113      ///         We know that topNominees() will return a full list.
+114      ///         Calls `SecurityCouncilManager.replaceCohort` with the list of nominees.
+115      function _execute(
+116          uint256 proposalId,
+117          address[] memory, /* targets */
+118          uint256[] memory, /* values */
+119          bytes[] memory callDatas,
+120          bytes32 /* descriptionHash */
+121:     ) internal override {
+
+135      /// @notice Normally "the number of votes required in order for a voter to become a proposer." But in our case it is 0.
+136      /// @dev    Since we only want proposals to be created via `proposeFromNomineeElectionGovernor`, we set the proposal threshold to 0.
+137      ///         `proposeFromNomineeElectionGovernor` determines the rules for creating a proposal.
+138      function proposalThreshold()
+139          public
+140          pure
+141          override(GovernorSettingsUpgradeable, GovernorUpgradeable)
+142          returns (uint256)
+143:     {
+
+147      /// @notice Quorum is always 0.
+148:     function quorum(uint256) public pure override returns (uint256) {
+
+152      /// @dev Whether the account is a compliant nominee.
+153      ///      checks the SecurityCouncilNomineeElectionGovernor to see if the account is a compliant nominee
+154      function _isCompliantNominee(uint256 proposalId, address possibleNominee)
+155          internal
+156          view
+157          override
+158          returns (bool)
+159:     {
+
+163      /// @dev Returns all the compliant (non excluded) nominees for the requested proposal
+164      function _compliantNominees(uint256 proposalId)
+165          internal
+166          view
+167          override
+168          returns (address[] memory)
+169:     {
+
+178      /// @notice Always reverts.
+179      /// @dev    `GovernorUpgradeable` function to create a proposal overridden to just revert.
+180      ///         We only want proposals to be created via `proposeFromNomineeElectionGovernor`.
+181      function propose(address[] memory, uint256[] memory, bytes[] memory, string memory)
+182          public
+183          virtual
+184          override
+185          returns (uint256)
+186:     {
+
+190      /// @notice Always reverts. Use castVoteWithReasonAndParams instead
+191:     function castVote(uint256, uint8) public virtual override returns (uint256) {
+
+195      /// @notice Always reverts. Use castVoteWithReasonAndParams instead
+196      function castVoteWithReason(uint256, uint8, string calldata)
+197          public
+198          virtual
+199          override
+200          returns (uint256)
+201:     {
+
+205      /// @notice Always reverts. Use castVoteWithReasonAndParamsBySig instead
+206      function castVoteBySig(uint256, uint8, uint8, bytes32, bytes32)
+207          public
+208          virtual
+209          override
+210          returns (uint256)
+211:     {
+
+```
+*GitHub*: [112](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L112-L121), [135](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L135-L143), [147](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L147-L148), [152](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L152-L159), [163](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L163-L169), [178](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L178-L186), [190](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L190-L191), [195](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L195-L201), [205](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L205-L211)
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol
+
+101      ///         but enforces that only calls to securityCouncilManager's removeMember can be propsoed.
+102      /// @param targets Target contract operation; must be [securityCouncilManager]
+103      /// @param values Value for removeMmeber; must be [0]
+104      /// @param calldatas Operation calldata; must be [removeMember with address argument]
+105      /// @param description rationale for member removal
+106      function propose(
+107          address[] memory targets,
+108          uint256[] memory values,
+109          bytes[] memory calldatas,
+110          string memory description
+111:     ) public override returns (uint256) {
+
+145      /// @notice override to allow for required vote success ratio that isn't 0.5
+146      /// @param proposalId target proposal id
+147      function _voteSucceeded(uint256 proposalId)
+148          internal
+149          view
+150          virtual
+151          override(GovernorCountingSimpleUpgradeable, GovernorUpgradeable)
+152          returns (bool)
+153:     {
+
+160      /// @notice A removal proposal if a theshold of all cast votes vote in favor of removal.
+161      ///         Thus, abstaining would be exactly equivalent to voting against.
+162      ///         To prevent any confusion, abstaining is disallowed.
+163      function _countVote(
+164          uint256 proposalId,
+165          address account,
+166          uint8 support,
+167          uint256 weight,
+168          bytes memory params
+169:     ) internal virtual override(GovernorCountingSimpleUpgradeable, GovernorUpgradeable) {
+
+```
+*GitHub*: [101](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L101-L111), [145](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L145-L153), [160](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L160-L169)
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol
+
+319      /// @dev    `GovernorUpgradeable` function to execute a proposal overridden to handle nominee elections.
+320      ///         Can be called by anyone via `execute` after voting and nominee vetting periods have ended.
+321      ///         If the number of compliant nominees is > the target number of nominees,
+322      ///         we move on to the next phase by calling the SecurityCouncilMemberElectionGovernor.
+323      /// @param  proposalId The id of the proposal
+324      function _execute(
+325          uint256 proposalId,
+326          address[] memory, /* targets */
+327          uint256[] memory, /* values */
+328          bytes[] memory callDatas,
+329          bytes32 /*descriptionHash*/
+330:     ) internal virtual override {
+
+354      /// @notice Normally "the number of votes required in order for a voter to become a proposer." But in our case it is 0.
+355      /// @dev    Since we only want proposals to be created via `createElection`, we set the proposal threshold to 0.
+356      ///         `createElection` determines the rules for creating a proposal.
+357      function proposalThreshold()
+358          public
+359          view
+360          virtual
+361          override(GovernorSettingsUpgradeable, GovernorUpgradeable)
+362          returns (uint256)
+363:     {
+
+420      /// @notice Always reverts.
+421      /// @dev    `GovernorUpgradeable` function to create a proposal overridden to just revert.
+422      ///         We only want proposals to be created via `createElection`.
+423      function propose(address[] memory, uint256[] memory, bytes[] memory, string memory)
+424          public
+425          virtual
+426          override
+427          returns (uint256)
+428:     {
+
+432      /// @notice Always reverts. Use castVoteWithReasonAndParams instead
+433:     function castVote(uint256, uint8) public virtual override returns (uint256) {
+
+437      /// @notice Always reverts. Use castVoteWithReasonAndParams instead
+438      function castVoteWithReason(uint256, uint8, string calldata)
+439          public
+440          virtual
+441          override
+442          returns (uint256)
+443:     {
+
+447      /// @notice Always reverts. Use castVoteWithReasonAndParamsBySig instead
+448      function castVoteBySig(uint256, uint8, uint8, bytes32, bytes32)
+449          public
+450          virtual
+451          override
+452          returns (uint256)
+453:     {
+
+```
+*GitHub*: [319](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L319-L330), [354](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L354-L363), [420](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L420-L428), [432](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L432-L433), [437](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L437-L443), [447](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L447-L453)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/ArbitrumGovernorVotesQuorumFractionUpgradeable.sol
+
+37       /// @notice Calculates the quorum size, excludes token delegated to the exclude address
+38:      function quorum(uint256 blockNumber) public view virtual override returns (uint256) {
+
+```
+*GitHub*: [37](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/ArbitrumGovernorVotesQuorumFractionUpgradeable.sol#L37-L38)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol
+
+90       /// @param  proposalId The id of the proposal
+91       /// @param  account The account that is voting
+92       /// @param  support The support of the vote (forced to 1)
+93       /// @param  availableVotes The amount of votes that account had at the time of the proposal snapshot
+94       /// @param  params Abi encoded (address nominee, uint256 votes)
+95       function _countVote(
+96           uint256 proposalId,
+97           address account,
+98           uint8 support,
+99           uint256 availableVotes,
+100          bytes memory params
+101:     ) internal virtual override {
+
+157      /// @notice Whether the account has voted any amount for any nominee in the proposal
+158:     function hasVoted(uint256 proposalId, address account) public view override returns (bool) {
+
+266      /// @notice True, since there is no minimum quorum
+267:     function _quorumReached(uint256) internal pure override returns (bool) {
+
+271      /// @notice True, since an election can only be only started if there are enough nominees
+272      ///         and candidates cannot be excluded after the election has started
+273:     function _voteSucceeded(uint256) internal pure override returns (bool) {
+
+```
+*GitHub*: [90](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L90-L101), [157](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L157-L158), [266](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L266-L267), [271](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L271-L273)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol
+
+57       /// @param proposalId the id of the proposal
+58       /// @param account the account that is casting the vote
+59       /// @param support the support of the vote (forced to 1)
+60       /// @param weight the amount of vote that account held at time of snapshot
+61       /// @param params abi encoded (contender, votes) where votes is the amount of votes the account is using for this contender
+62       function _countVote(
+63           uint256 proposalId,
+64           address account,
+65           uint8 support,
+66           uint256 weight,
+67           bytes memory params
+68:      ) internal virtual override {
+
+132      /// @notice Whether the account has voted any amount for any contender in the proposal
+133:     function hasVoted(uint256 proposalId, address account) public view override returns (bool) {
+
+169      /// @dev there is no minimum quorum for nominations proposals to pass, so we just return true
+170:     function _quorumReached(uint256) internal pure override returns (bool) {
+
+174      /// @dev the vote always succeeds, so we just return true
+175:     function _voteSucceeded(uint256) internal pure override returns (bool) {
+
+```
+*GitHub*: [57](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol#L57-L68), [132](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol#L132-L133), [169](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol#L169-L170), [174](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol#L174-L175)
+
+
+### [D&#x2011;19] ~~Functions which are either private or internal should have a preceding _ in their name~~
+This rule does not apply to internal library functions, so these instances are invalid.
+
+*There are 4 instances of this issue:*
+
+```solidity
+File: src/gov-action-contracts/AIPs/SecurityCouncilMgmt/SecurityCouncilMgmtUpgradeLib.sol
+
+8        function replaceEmergencySecurityCouncil(
+9            IGnosisSafe _prevSecurityCouncil,
+10           IGnosisSafe _newSecurityCouncil,
+11           uint256 _threshold,
+12           IUpgradeExecutor _upgradeExecutor
+13:      ) internal {
+
+29       function requireSafesEquivalent(
+30           IGnosisSafe _safe1,
+31           IGnosisSafe safe2,
+32           uint256 _expectedThreshold
+33:      ) internal view {
+
+```
+*GitHub*: [8](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/SecurityCouncilMgmtUpgradeLib.sol#L8-L13), [29](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/SecurityCouncilMgmtUpgradeLib.sol#L29-L33)
+
+```solidity
+File: src/security-council-mgmt/SecurityCouncilMgmtUtils.sol
+
+5:       function isInArray(address addr, address[] memory arr) internal pure returns (bool) {
+
+15       function filterAddressesWithExcludeList(
+16           address[] memory input,
+17           mapping(address => bool) storage excludeList
+18:      ) internal view returns (address[] memory) {
+
+```
+*GitHub*: [5](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilMgmtUtils.sol#L5-L5), [15](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilMgmtUtils.sol#L15-L18)
+
+
+### [D&#x2011;20] ~~Contracts are not using their OZ Upgradeable counterparts~~
+The rule is true only when the contract being defined is upgradeable, which isn't the case for these invalid examples
+
+*There are 4 instances of this issue:*
+
+```solidity
+File: src/security-council-mgmt/SecurityCouncilManager.sol
+
+/// @audit SecurityCouncilManager is a non-upgradeable contract
+12:  import "@openzeppelin/contracts/utils/Address.sol";
+
+```
+*GitHub*: [12](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L12-L12)
+
+```solidity
+File: src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol
+
+/// @audit L2SecurityCouncilMgmtFactory is a non-upgradeable contract
+4:   import "@openzeppelin/contracts/access/Ownable.sol";
+
+/// @audit L2SecurityCouncilMgmtFactory is a non-upgradeable contract
+5:   import "@openzeppelin/contracts/utils/Address.sol";
+
+/// @audit L2SecurityCouncilMgmtFactory is a non-upgradeable contract
+10:  import "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
+
+```
+*GitHub*: [4](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L4-L4), [5](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L5-L5), [10](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L10-L10)
+
+
+### [D&#x2011;21] ~~All interfaces used within a project should be imported~~
+These contracts don't rely on other contracts for their definitions, so there's nothing to import
+
+*There are 10 instances of this issue:*
+
+<details>
+<summary>see instances</summary>
+
+
+```solidity
+File: src/UpgradeExecRouteBuilder.sol
+
+9:   interface DefaultGovAction {
+
+39:  contract UpgradeExecRouteBuilder {
+
+```
+*GitHub*: [9](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L9-L9), [39](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L39-L39)
+
+```solidity
+File: src/gov-action-contracts/AIPs/SecurityCouncilMgmt/GovernanceChainSCMgmtActivationAction.sol
+
+12:  contract GovernanceChainSCMgmtActivationAction {
+
+```
+*GitHub*: [12](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/GovernanceChainSCMgmtActivationAction.sol#L12-L12)
+
+```solidity
+File: src/gov-action-contracts/AIPs/SecurityCouncilMgmt/L1SCMgmtActivationAction.sol
+
+9:   contract L1SCMgmtActivationAction {
+
+```
+*GitHub*: [9](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/L1SCMgmtActivationAction.sol#L9-L9)
+
+```solidity
+File: src/gov-action-contracts/AIPs/SecurityCouncilMgmt/NonGovernanceChainSCMgmtActivationAction.sol
+
+7:   contract NonGovernanceChainSCMgmtActivationAction {
+
+```
+*GitHub*: [7](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/NonGovernanceChainSCMgmtActivationAction.sol#L7-L7)
+
+```solidity
+File: src/gov-action-contracts/AIPs/SecurityCouncilMgmt/SecurityCouncilMgmtUpgradeLib.sol
+
+7:   library SecurityCouncilMgmtUpgradeLib {
+
+```
+*GitHub*: [7](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/SecurityCouncilMgmtUpgradeLib.sol#L7-L7)
+
+```solidity
+File: src/gov-action-contracts/execution-record/ActionExecutionRecord.sol
+
+10   contract ActionExecutionRecord {
+11       /// @notice The key value store used to record the execution
+12:      /// @dev    Local storage cannot be used in action contracts as they're delegate called into
+
+```
+*GitHub*: [10](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/execution-record/ActionExecutionRecord.sol#L10-L12)
+
+```solidity
+File: src/gov-action-contracts/execution-record/KeyValueStore.sol
+
+6:   contract KeyValueStore {
+
+```
+*GitHub*: [6](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/execution-record/KeyValueStore.sol#L6-L6)
+
+```solidity
+File: src/security-council-mgmt/SecurityCouncilMgmtUtils.sol
+
+4:   library SecurityCouncilMgmtUtils {
+
+```
+*GitHub*: [4](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilMgmtUtils.sol#L4-L4)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/ElectionGovernor.sol
+
+9    contract ElectionGovernor {
+10       /// @notice Generate arguments to be passed to the governor propose function
+11       /// @param electionIndex The index of the election to create a proposal for
+12       /// @return Targets
+13       /// @return Values
+14       /// @return Calldatas
+15:      /// @return Description
+
+```
+*GitHub*: [9](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/ElectionGovernor.sol#L9-L15)
+
+</details>
+
+### [D&#x2011;22] ~~Change `public` function visibility to `external` to save gas~~
+Both `public` and `external` functions use the same amount of gas (both deployment and runtime gas), so this finding is invalid
+
+*There are 22 instances of this issue:*
+
+<details>
+<summary>see instances</summary>
+
+
+```solidity
+File: src/UpgradeExecRouteBuilder.sol
+
+186      function createActionRouteDataWithDefaults(
+187          uint256[] memory chainIds,
+188          address[] memory actionAddresses,
+189          bytes32 timelockSalt
+190:     ) public view returns (address, bytes memory) {
+
+```
+*GitHub*: [186](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L186-L190)
+
+```solidity
+File: src/security-council-mgmt/SecurityCouncilManager.sol
+
+349:     function securityCouncilsLength() public view returns (uint256) {
+
+```
+*GitHub*: [349](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L349-L349)
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol
+
+48       function initialize(
+49           ISecurityCouncilNomineeElectionGovernor _nomineeElectionGovernor,
+50           ISecurityCouncilManager _securityCouncilManager,
+51           IVotesUpgradeable _token,
+52           address _owner,
+53           uint256 _votingPeriod,
+54           uint256 _fullWeightDuration
+55:      ) public initializer {
+
+```
+*GitHub*: [48](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L48-L55)
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol
+
+58       function initialize(
+59           uint256 _voteSuccessNumerator,
+60           ISecurityCouncilManager _securityCouncilManager,
+61           IVotesUpgradeable _token,
+62           address _owner,
+63           uint256 _votingDelay,
+64           uint256 _votingPeriod,
+65           uint256 _quorumNumerator,
+66           uint256 _proposalThreshold,
+67           uint64 _minPeriodAfterQuorum,
+68           uint256 _proposalExpirationBlocks
+69:      ) public initializer {
+
+178:     function setVoteSuccessNumerator(uint256 _voteSuccessNumerator) public onlyOwner {
+
+```
+*GitHub*: [58](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L58-L69), [178](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L178-L178)
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol
+
+103:     function initialize(InitParams memory params) public initializer {
+
+368:     function isCompliantNominee(uint256 proposalId, address account) public view returns (bool) {
+
+373:     function compliantNominees(uint256 proposalId) public view returns (address[] memory) {
+
+388:     function currentCohort() public view returns (Cohort) {
+
+400:     function isExcluded(uint256 proposalId, address possibleExcluded) public view returns (bool) {
+
+405:     function excludedNomineeCount(uint256 proposalId) public view returns (uint256) {
+
+```
+*GitHub*: [103](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L103-L103), [368](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L368-L368), [373](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L373-L373), [388](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L388-L388), [400](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L400-L400), [405](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L405-L405)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/ElectionGovernor.sol
+
+16       function getProposeArgs(uint256 electionIndex)
+17           public
+18           pure
+19           returns (address[] memory, uint256[] memory, bytes[] memory, string memory)
+20:      {
+
+50:      function electionIndexToCohort(uint256 electionIndex) public pure returns (Cohort) {
+
+```
+*GitHub*: [16](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/ElectionGovernor.sol#L16-L20), [50](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/ElectionGovernor.sol#L50-L50)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol
+
+77:      function setFullWeightDuration(uint256 newFullWeightDuration) public onlyGovernance {
+
+153:     function weightReceived(uint256 proposalId, address nominee) public view returns (uint256) {
+
+177:     function topNominees(uint256 proposalId) public view returns (address[] memory) {
+
+```
+*GitHub*: [77](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L77-L77), [153](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L153-L153), [177](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L177-L177)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol
+
+143:     function nomineeCount(uint256 proposalId) public view returns (uint256) {
+
+148:     function nominees(uint256 proposalId) public view returns (address[] memory) {
+
+153:     function votesUsed(uint256 proposalId, address account) public view returns (uint256) {
+
+158:     function votesReceived(uint256 proposalId, address contender) public view returns (uint256) {
+
+```
+*GitHub*: [143](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol#L143-L143), [148](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol#L148-L148), [153](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol#L153-L153), [158](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol#L158-L158)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorTiming.sol
+
+69:      function proposalVettingDeadline(uint256 proposalId) public view returns (uint256) {
+
+75:      function electionToTimestamp(uint256 electionIndex) public view returns (uint256) {
+
+```
+*GitHub*: [69](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorTiming.sol#L69-L69), [75](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorTiming.sol#L75-L75)
+
+</details>
+
+### [D&#x2011;23] ~~Re-org attack~~
+No specific vulnerability has been outlined, other than the fact that block chains have re-orgs, and nothing is being cloned
+
+*There are 2 instances of this issue:*
+
+```solidity
+File: src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol
+
+75:          return address(new TransparentUpgradeableProxy(impl, proxyAdmin, initData));
+
+158:         deployedContracts.upgradeExecRouteBuilder = new UpgradeExecRouteBuilder({
+
+```
+*GitHub*: [75](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L75-L75), [158](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L158-L158)
+
+
+### [D&#x2011;24] ~~A function which defines named returns in it's declaration doesn't need to use return~~
+It needs to use a return here, or else the function won't work
+
+*There is one instance of this issue:*
+
+```solidity
+File: src/security-council-mgmt/SecurityCouncilMemberSyncAction.sol
+
+47:              return false;
+
+```
+*GitHub*: [47](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilMemberSyncAction.sol#L47-L47)
+
+
+### [D&#x2011;25] ~~State variable read in a loop~~
+these references to the variable cannot be cached
+
+*There are 13 instances of this issue:*
+
+```solidity
+File: src/UpgradeExecRouteBuilder.sol
+
+/// @audit upExecLocations
+84:              upExecLocations[chainAndUpExecLocation.chainId] = chainAndUpExecLocation.location;
+
+/// @audit upExecLocations
+130:             UpExecLocation memory upExecLocation = upExecLocations[chainIds[i]];
+
+/// @audit RETRYABLE_TICKET_MAGIC
+149:                 schedTargets[i] = RETRYABLE_TICKET_MAGIC;
+
+/// @audit DEFAULT_GOV_ACTION_CALLDATA
+194:             actionDatas[i] = DEFAULT_GOV_ACTION_CALLDATA;
+
+/// @audit DEFAULT_VALUE
+195:             values[i] = DEFAULT_VALUE;
+
+```
+*GitHub*: [84](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L84-L84), [130](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L130-L130), [149](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L149-L149), [194](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L194-L194), [195](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L195-L195)
+
+```solidity
+File: src/security-council-mgmt/SecurityCouncilManager.sol
+
+/// @audit securityCouncils
+252:             SecurityCouncilData storage existantSecurityCouncil = securityCouncils[i];
+
+/// @audit securityCouncils
+285:             SecurityCouncilData storage securityCouncilData = securityCouncils[i];
+
+/// @audit securityCouncils
+292:                     securityCouncils[securityCouncils.length - 1];
+
+/// @audit securityCouncils
+294:                 securityCouncils[i] = lastSecurityCouncil;
+
+/// @audit securityCouncils
+295:                 securityCouncils.pop();
+
+/// @audit firstCohort
+340:             members[i] = firstCohort[i];
+
+/// @audit secondCohort
+343:             members[firstCohort.length + i] = secondCohort[i];
+
+/// @audit securityCouncils
+393:             SecurityCouncilData memory securityCouncilData = securityCouncils[i];
+
+```
+*GitHub*: [252](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L252-L252), [285](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L285-L285), [292](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L292-L292), [294](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L294-L294), [295](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L295-L295), [340](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L340-L340), [343](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L343-L343), [393](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L393-L393)
+
+
+### [D&#x2011;26] ~~Do not use underscore at the end of variable name~~
+A common convention is to add a trailing underscore to a variable name in order to prevent the shadowing of [another variable](https://github.com/ethereum/solidity/issues/11764#issuecomment-895813808) or function name, as is the case with the examples below.
+
+*There are 4 instances of this issue:*
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol
+
+144:         ProposalState state_ = state(proposalId);
+
+225:         ProposalState state_ = state(proposalId);
+
+291:         ProposalState state_ = state(proposalId);
+
+```
+*GitHub*: [144](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L144-L144), [225](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L225-L225), [291](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L291-L291)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol
+
+242:         uint256 fullWeightVotingDeadline_ = fullWeightVotingDeadline(proposalId);
+
+```
+*GitHub*: [242](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L242-L242)
+
+
+### [D&#x2011;27] ~~Save gas with the use of specific import statements~~
+Importing whole files rather than specific identifiers [does not waste gas](https://ethereum.stackexchange.com/questions/138876/does-solidity-optimizer-eliminate-unused-internal-functions-of-libraries), so this finding is invalid
+
+*There are 82 instances of this issue:*
+
+<details>
+<summary>see instances</summary>
+
+
+```solidity
+File: src/UpgradeExecRouteBuilder.sol
+
+4:   import "@arbitrum/nitro-contracts/src/precompiles/ArbSys.sol";
+
+5:   import "./UpgradeExecutor.sol";
+
+6:   import "./L1ArbitrumTimelock.sol";
+
+7:   import "./security-council-mgmt/Common.sol";
+
+```
+*GitHub*: [4](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L4-L4), [5](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L5-L5), [6](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L6-L6), [7](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L7-L7)
+
+```solidity
+File: src/gov-action-contracts/AIPs/SecurityCouncilMgmt/GovernanceChainSCMgmtActivationAction.sol
+
+4:   import "../../../security-council-mgmt/interfaces/IGnosisSafe.sol";
+
+5:   import "../../address-registries/L2AddressRegistryInterfaces.sol";
+
+6:   import "./SecurityCouncilMgmtUpgradeLib.sol";
+
+7:   import "../../../interfaces/IArbitrumDAOConstitution.sol";
+
+8:   import "../../../interfaces/IUpgradeExecutor.sol";
+
+9:   import "../../../interfaces/ICoreTimelock.sol";
+
+10:  import "@openzeppelin/contracts/utils/Address.sol";
+
+```
+*GitHub*: [4](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/GovernanceChainSCMgmtActivationAction.sol#L4-L4), [5](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/GovernanceChainSCMgmtActivationAction.sol#L5-L5), [6](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/GovernanceChainSCMgmtActivationAction.sol#L6-L6), [7](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/GovernanceChainSCMgmtActivationAction.sol#L7-L7), [8](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/GovernanceChainSCMgmtActivationAction.sol#L8-L8), [9](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/GovernanceChainSCMgmtActivationAction.sol#L9-L9), [10](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/GovernanceChainSCMgmtActivationAction.sol#L10-L10)
+
+```solidity
+File: src/gov-action-contracts/AIPs/SecurityCouncilMgmt/L1SCMgmtActivationAction.sol
+
+4:   import "../../../security-council-mgmt/interfaces/IGnosisSafe.sol";
+
+5:   import "../../../interfaces/IUpgradeExecutor.sol";
+
+6:   import "../../../interfaces/ICoreTimelock.sol";
+
+7:   import "./SecurityCouncilMgmtUpgradeLib.sol";
+
+```
+*GitHub*: [4](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/L1SCMgmtActivationAction.sol#L4-L4), [5](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/L1SCMgmtActivationAction.sol#L5-L5), [6](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/L1SCMgmtActivationAction.sol#L6-L6), [7](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/L1SCMgmtActivationAction.sol#L7-L7)
+
+```solidity
+File: src/gov-action-contracts/AIPs/SecurityCouncilMgmt/NonGovernanceChainSCMgmtActivationAction.sol
+
+4:   import "../../../security-council-mgmt/interfaces/IGnosisSafe.sol";
+
+5:   import "./SecurityCouncilMgmtUpgradeLib.sol";
+
+```
+*GitHub*: [4](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/NonGovernanceChainSCMgmtActivationAction.sol#L4-L4), [5](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/NonGovernanceChainSCMgmtActivationAction.sol#L5-L5)
+
+```solidity
+File: src/gov-action-contracts/AIPs/SecurityCouncilMgmt/SecurityCouncilMgmtUpgradeLib.sol
+
+4:   import "../../../security-council-mgmt/interfaces/IGnosisSafe.sol";
+
+5:   import "../../../interfaces/IUpgradeExecutor.sol";
+
+```
+*GitHub*: [4](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/SecurityCouncilMgmtUpgradeLib.sol#L4-L4), [5](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/AIPs/SecurityCouncilMgmt/SecurityCouncilMgmtUpgradeLib.sol#L5-L5)
+
+```solidity
+File: src/gov-action-contracts/execution-record/ActionExecutionRecord.sol
+
+4:   import "./KeyValueStore.sol";
+
+```
+*GitHub*: [4](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/gov-action-contracts/execution-record/ActionExecutionRecord.sol#L4-L4)
+
+```solidity
+File: src/security-council-mgmt/SecurityCouncilManager.sol
+
+4:   import "../ArbitrumTimelock.sol";
+
+5:   import "../UpgradeExecutor.sol";
+
+6:   import "../L1ArbitrumTimelock.sol";
+
+7:   import "./SecurityCouncilMgmtUtils.sol";
+
+8:   import "./interfaces/ISecurityCouncilManager.sol";
+
+9:   import "./SecurityCouncilMemberSyncAction.sol";
+
+10:  import "../UpgradeExecRouteBuilder.sol";
+
+11:  import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+
+12:  import "@openzeppelin/contracts/utils/Address.sol";
+
+13:  import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+
+14:  import "./Common.sol";
+
+```
+*GitHub*: [4](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L4-L4), [5](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L5-L5), [6](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L6-L6), [7](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L7-L7), [8](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L8-L8), [9](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L9-L9), [10](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L10-L10), [11](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L11-L11), [12](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L12-L12), [13](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L13-L13), [14](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilManager.sol#L14-L14)
+
+```solidity
+File: src/security-council-mgmt/SecurityCouncilMemberSyncAction.sol
+
+4:   import "./interfaces/IGnosisSafe.sol";
+
+5:   import "./SecurityCouncilMgmtUtils.sol";
+
+6:   import "../gov-action-contracts/execution-record/ActionExecutionRecord.sol";
+
+```
+*GitHub*: [4](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilMemberSyncAction.sol#L4-L4), [5](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilMemberSyncAction.sol#L5-L5), [6](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/SecurityCouncilMemberSyncAction.sol#L6-L6)
+
+```solidity
+File: src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol
+
+4:   import "@openzeppelin/contracts/access/Ownable.sol";
+
+5:   import "@openzeppelin/contracts/utils/Address.sol";
+
+6:   import "../governors/SecurityCouncilMemberElectionGovernor.sol";
+
+7:   import "../governors/SecurityCouncilNomineeElectionGovernor.sol";
+
+8:   import "../SecurityCouncilManager.sol";
+
+9:   import "../governors/SecurityCouncilMemberRemovalGovernor.sol";
+
+10:  import "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
+
+11:  import "../interfaces/ISecurityCouncilManager.sol";
+
+12:  import "../interfaces/IGnosisSafe.sol";
+
+13:  import "../../ArbitrumTimelock.sol";
+
+14:  import "@openzeppelin/contracts-upgradeable/governance/utils/IVotesUpgradeable.sol";
+
+15:  import "../../UpgradeExecRouteBuilder.sol";
+
+16:  import "../Common.sol";
+
+```
+*GitHub*: [4](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L4-L4), [5](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L5-L5), [6](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L6-L6), [7](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L7-L7), [8](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L8-L8), [9](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L9-L9), [10](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L10-L10), [11](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L11-L11), [12](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L12-L12), [13](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L13-L13), [14](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L14-L14), [15](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L15-L15), [16](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L16-L16)
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol
+
+4:   import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorVotesUpgradeable.sol";
+
+5:   import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorSettingsUpgradeable.sol";
+
+6:   import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+
+7:   import "./modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol";
+
+8:   import "../interfaces/ISecurityCouncilMemberElectionGovernor.sol";
+
+9:   import "../interfaces/ISecurityCouncilNomineeElectionGovernor.sol";
+
+10:  import "../interfaces/ISecurityCouncilManager.sol";
+
+11:  import "./modules/ElectionGovernor.sol";
+
+```
+*GitHub*: [4](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L4-L4), [5](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L5-L5), [6](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L6-L6), [7](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L7-L7), [8](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L8-L8), [9](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L9-L9), [10](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L10-L10), [11](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberElectionGovernor.sol#L11-L11)
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol
+
+4    import
+5:       "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorPreventLateQuorumUpgradeable.sol";
+
+6    import
+7:       "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorCountingSimpleUpgradeable.sol";
+
+8:   import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorSettingsUpgradeable.sol";
+
+9:   import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+
+10:  import "./../interfaces/ISecurityCouncilManager.sol";
+
+11:  import "../Common.sol";
+
+12:  import "./modules/ArbitrumGovernorVotesQuorumFractionUpgradeable.sol";
+
+13:  import "./modules/ArbitrumGovernorProposalExpirationUpgradeable.sol";
+
+```
+*GitHub*: [4](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L4-L5), [6](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L6-L7), [8](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L8-L8), [9](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L9-L9), [10](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L10-L10), [11](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L11-L11), [12](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L12-L12), [13](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilMemberRemovalGovernor.sol#L13-L13)
+
+```solidity
+File: src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol
+
+4:   import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorSettingsUpgradeable.sol";
+
+5:   import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+
+6:   import "../interfaces/ISecurityCouncilMemberElectionGovernor.sol";
+
+7:   import "../interfaces/ISecurityCouncilNomineeElectionGovernor.sol";
+
+8:   import "./modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol";
+
+9:   import "./modules/ArbitrumGovernorVotesQuorumFractionUpgradeable.sol";
+
+10:  import "./modules/SecurityCouncilNomineeElectionGovernorTiming.sol";
+
+11:  import "./modules/ElectionGovernor.sol";
+
+12:  import "../SecurityCouncilMgmtUtils.sol";
+
+```
+*GitHub*: [4](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L4-L4), [5](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L5-L5), [6](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L6-L6), [7](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L7-L7), [8](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L8-L8), [9](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L9-L9), [10](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L10-L10), [11](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L11-L11), [12](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/SecurityCouncilNomineeElectionGovernor.sol#L12-L12)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/ArbitrumGovernorVotesQuorumFractionUpgradeable.sol
+
+4    import
+5:       "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorVotesQuorumFractionUpgradeable.sol";
+
+```
+*GitHub*: [4](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/ArbitrumGovernorVotesQuorumFractionUpgradeable.sol#L4-L5)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/ElectionGovernor.sol
+
+5:   import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
+
+6:   import "../../Common.sol";
+
+```
+*GitHub*: [5](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/ElectionGovernor.sol#L5-L5), [6](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/ElectionGovernor.sol#L6-L6)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol
+
+4:   import "@openzeppelin/contracts-upgradeable/governance/GovernorUpgradeable.sol";
+
+6:   import "solady/utils/LibSort.sol";
+
+```
+*GitHub*: [4](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L4-L4), [6](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilMemberElectionGovernorCountingUpgradeable.sol#L6-L6)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol
+
+4:   import "@openzeppelin/contracts-upgradeable/governance/GovernorUpgradeable.sol";
+
+```
+*GitHub*: [4](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorCountingUpgradeable.sol#L4-L4)
+
+```solidity
+File: src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorTiming.sol
+
+4:   import "../../interfaces/ISecurityCouncilManager.sol";
+
+6:   import "@openzeppelin/contracts-upgradeable/governance/GovernorUpgradeable.sol";
+
+7:   import "solady/utils/DateTimeLib.sol";
+
+8:   import "../../Common.sol";
+
+```
+*GitHub*: [4](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorTiming.sol#L4-L4), [6](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorTiming.sol#L6-L6), [7](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorTiming.sol#L7-L7), [8](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/governors/modules/SecurityCouncilNomineeElectionGovernorTiming.sol#L8-L8)
+
+</details>
+
+### [D&#x2011;28] ~~Unused `error` definition~~
+The error is used in a file that is different from the one in which it is defined
+
+*There are 2 instances of this issue:*
+
+```solidity
+File: src/security-council-mgmt/Common.sol
+
+20:  error ZeroAddress();
+
+21:  error NotAContract(address account);
+
+```
+*GitHub*: [20](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/Common.sol#L20-L20), [21](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/Common.sol#L21-L21)
+
+
+### [D&#x2011;29] ~~Unused `struct` definition~~
+These structs are used outside of the defining contract
+
+*There are 5 instances of this issue:*
+
+```solidity
+File: src/UpgradeExecRouteBuilder.sol
+
+17   struct UpExecLocation {
+18       address inbox; // Inbox should be set to address(0) to signify that the upgrade executor is on the L1/host chain
+19       address upgradeExecutor;
+20:  }
+
+22   struct ChainAndUpExecLocation {
+23       uint256 chainId;
+24       UpExecLocation location;
+25:  }
+
+```
+*GitHub*: [17](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L17-L20), [22](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/UpgradeExecRouteBuilder.sol#L22-L25)
+
+```solidity
+File: src/security-council-mgmt/Common.sol
+
+13   struct Date {
+14       uint256 year;
+15       uint256 month;
+16       uint256 day;
+17       uint256 hour;
+18:  }
+
+```
+*GitHub*: [13](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/Common.sol#L13-L18)
+
+```solidity
+File: src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol
+
+18   struct DeployParams {
+19       ChainAndUpExecLocation[] upgradeExecutors;
+20       address govChainEmergencySecurityCouncil;
+21       address l1ArbitrumTimelock;
+22       address l2CoreGovTimelock;
+23       address govChainProxyAdmin;
+24       address[] secondCohort;
+25       address[] firstCohort;
+26       address l2UpgradeExecutor;
+27       address arbToken;
+28       uint256 l1TimelockMinDelay;
+29       uint256 removalGovVotingDelay;
+30       uint256 removalGovVotingPeriod;
+31       uint256 removalGovQuorumNumerator;
+32       uint256 removalGovProposalThreshold;
+33       uint256 removalGovVoteSuccessNumerator;
+34       uint64 removalGovMinPeriodAfterQuorum;
+35       uint256 removalProposalExpirationBlocks;
+36       SecurityCouncilData[] securityCouncils;
+37       Date firstNominationStartDate;
+38       uint256 nomineeVettingDuration;
+39       address nomineeVetter;
+40       uint256 nomineeQuorumNumerator;
+41       uint256 nomineeVotingPeriod;
+42       uint256 memberVotingPeriod;
+43       uint256 fullWeightDuration;
+44:  }
+
+46   struct ContractImplementations {
+47       address nomineeElectionGovernor;
+48       address memberElectionGovernor;
+49       address securityCouncilManager;
+50       address securityCouncilMemberRemoverGov;
+51:  }
+
+```
+*GitHub*: [18](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L18-L44), [46](https://github.com/arbitrumfoundation/governance/blob/c18de53820c505fc459f766c1b224810eaeaabc5/src/security-council-mgmt/factories/L2SecurityCouncilMgmtFactory.sol#L46-L51)
+
+
+## Rubric
+See [this](https://illilli000.github.io/races/2023-07-lens/scorer.html) link for how to use this rubric:
+```json
+{"salt":"510700","hashes":["aff740bff4","bf636778cf","566bd9eb9f","0334da8c81","c49f72f303","a2cae3616e","3cd419b161","d83d4942bf","e22dc42adf","4c5485ae9d","4205c59e9b","7310717510","dc0328a664","11eb9b2c1f","beff99320e","afe5978957","dcf3ed350a","8b10bae3c1","ded73207d8","9ce029a012","d6b80ca9f3","eb7279a298","47e2d81aeb","97bd3f059a","40d696c828","672b65d54c","35b8ffb715","481695b6ac","e1409c9dbd","c9d562ecac","fe19e1632a","e7441aa76c","14b72d98a3","6244370e88","4aac19566c","2d67e45377","fd56471f51","224f2b32ff","fd74f2971f","9fad1971c6","f341a03fda","de3ee7a2b9","aff740bff4","bf636778cf","566bd9eb9f","0334da8c81","c49f72f303","a2cae3616e","3cd419b161","7669cf26de","6922823e9e","87a476d0a1","84b0fc18a1","3be9893be7","2a0c0d726f","de3e8078c6","5ac22bd82b","856e998e9d","e853444eb9","fa8157c9b1","82fe40bfd5","fe8d970790","87620511cc","a049d1203d","1282c5a2ca","c0a6838333","18a0a394bc","1af3080627","4fb15c683c","e4820afc32","d7836b63ba","c1c90f50e5","7a6b5cc414","fa97d14720","72309ffbb3","5e165d7f96","c0d17082f0","fabb333dcf","8de7aac15a","e48bf1b424","42ead7e4dc","c7dc984217","81bae15e6b","1cadc7faba","4e1ef4397c","4e05cb1f0f","fd8a6b5085","6f9633f694","d3bff19c32","edab88e73a","643109f731","ae85f03a25","a544250928","296b655eed","b223f6e0ec","1469b8961e","1c7ce4e145","8d87b6f59f","8cae703962","069c665948","1a7fcb44ff","60fa87d310","ebdca3889c","c0e093bb48","09b722ecfc","1d849810f8","18e8cdf556","8c2486fb44","a17b1edfde","e829ffdd7d","314f1681ac","ae1fa2b2a7","5e5a0b13e8","6ea42af1cf","446e58e8a6","2c10b37b20","53431fc2a8","ca6d2652c3","50824c6a8d","15eedc5e5d","0c6ece823b","982158648f","0100df5fef","345446c323","de07578be5","d38eda3aa3","c1e0843b40","491fcf9685","27d1172d7c","c41b17f9bf","f7bbc96a5e","82f94d0311","bbd870ae25","84446a5f53","c4c186a382","b246a3f72d","8ba4ff73e8","0a30262741","133436b9c0","baa99453ab","b3470cc977","f62c1d17b5","272578d4e2","3d15dcbb3d","aa94ebf49f","e89dd2bbf1","488de1898c","c3c4902845","53a6200d6b","29b708b7f8","8ac0824bb3","3e202e3486","2d8a1326ce","1f058c1e88","6772f1b485","4f58b514a2","ca85484108","0db90217dc","53b5a0b29e","9d8ec67b76","5e445e1426","9c855e01aa","13861b446c","abab76cc65","f957bf9a0b","02e81a6b8b","670c452efe","adaf9d2158","24220a1535","4b5cc181a1","9740d48816","a484d3389b","3905e1368d","76d5f8a4ff","9435ea9db7","006672cf14","6e065757f6","3d31998800","42888ce4a0","a07d6be273","bd872a5d4c","5c47c83178","f32aec8bb9","14c6cf2d25","bc57d73ceb","82ce4c9007","d5ea28798f","86ac5ae4f7","a6a8e15455","61410e5851","8ae2f21266","e164bf2737","a178a49f30","1cc0342f02","1994a43936","570e76c573","5070983d80","840d519dd2","35d8c3e09f","a15c497a24","e0638466c2","c7d5e17d99","670bddeef7","05943a1a1c","c488e0dd54","3f1e72f995","5511e9ec0f","c7adee9284","4a4e55cace","be3aa883fc","c0aad371f7","17ef29b5e3","44f923ab82","c3516a493f","e3f37f407a","791848ed2f","aa5c3eb54e","1457d02dc2","f321cea2cf","130bfd2b9d","7f0170a643","568a7c51f0","e28bccd0b4","d1841c74c3","37f8673a58","5dd2fe6bc7","8b048dbcc2","3de07a2825","b94d35aab9","02011793a6","a3f0170e78","c0aad371f7","17ef29b5e3","44f923ab82","c3516a493f","e3f37f407a","791848ed2f","aa5c3eb54e","6a04fadf52","987d947afa","8ee6cb1fb4","56a2c25520","76eafee8c1","a9fe184662","b1caefa0f7","9a13b94044","f652dab143","2b97d90e5f","58d7c61d3b","a0f5cd18f8","52f2fbe56c","ee39a97fb4","bf1db80021","076b230e56","1c0a2b9f64","60e015635a","428393e299","d6a8064a1f","3220d0034c","63527a66e5","147f738a6b","0e2202e07a","d04f697e8a","b9159be802","a09601ea03","93bc9a4c74","a102b01ca8","fa30fba141","3bb60041f4","4dbf0a5d15","8425b5d8f8","61baa7fa13","39d9e087b0","8607d3c6a4","2ee7ec8368","f0a95760f3","6ea8341faa","c2231e082b","6791197a2c","8e6a649568","55fc64f2a1","2c25f7f2da","9e5a74a3b0","b32ddc4272","a373571427","4064897de7","6ea9c6ba7a","4f913eeffb","f946b82bf7","49a3b82f22","0da725be71","e70956ed36","6c826121fc","5acd203999","e9c62a297b","230d12100f","e724517f9a","b257976f62","cc996053f7","f58629d4d8","85bd50b894","3f437ea04d","de0b0ef9cc","ea09fd2f66","7600c6ed52","05c21d60df","d2d045e5b8","be25216d08","b9cdd5ae8f","0c09dd1be4","544179f6ed","7390dde1d8","f7afea1444","59c9afd05c","9636fe42c6","84e3a72f43","2663d51378","a4943a2d65","a07cd5389c","ad9fd744f4","9d7b2ebc9c","fa68aec65f","f551992fdf","d45a052aaf","cb8f5e94dd","47b50eaa49","ef95666396","24b411948b","10770e864c","6e9fd4d5f9","d239b188cc","f6b6a15be1","08532bd178","7e4d27a902","777139ac98","621ff1ad4f","873ee76cce","caa80b81e0","e3bb8c77f1","53d0dea750","377fe7e2c8","7bddf4c269","000e27bcf8","e92c287fcc","737073fce3","8827054cb9","32b865692f","8f4095bb4a","be66e4d40c","7f3eef70e6","b7af0e6cf6","1e96aefccd","2db03eb241","54efbadaa1","f19bf95776","d3a6d0daee","5ab1a9aa81","5242b35a3f","bfae9903e1","445546da65","6249cbf680","5069e900f6","11bbc9e62f","3caddf7cf5","8c124afc1d","c2bd1ba764","db160c4e1e","80fe2df609","1ecff57118","5616b7cf1f","11cb8b3c70","f551992fdf","d45a052aaf","cb8f5e94dd","47b50eaa49","ef95666396","24b411948b","10770e864c","73c4bd2026","c7b9528732","e7c78d23e9","0d0dffa2ac","ce42ab5d2e","fd76cf7f54","a4e4ec020a","4d155772c9","b32a13201c","0d951e7ca8","f9838a5fa6","0ecf699a57","5ab4638e63","d1d1170ac5","20ab73fd59","db12b4a45f","2e58cfc5ee","48f7ab6c24","08315922d1","f2d82620e3","ff56d6c664","e4d752745f","745694b841","7479c564ee","bd8d21d29e","7c87c1708d","d2896ecdc0","05eb1ca6a4","dd0c70218f","2e1d1a6884","88808526a3","da57897fa6","cb2f24fb42","484598196a","ecc60f6cfe","b32c7b1dd5","f7a395c2fa","2457692a6a","6ecb78c8ce","bffb04c472","9d985dc259","ad7ba4dc6f","edbf805533","b0509c54cd","8e289798d4","1aa1781dcc","33ac7d6f82","48da2e3f70","34f686ff71","30ee6ce925","47ec03088f","b64dea3347","82230cf2b5","43bf6590cc","d3ba1b60b9","7f98808a33","c7e62c50f6","440c290307","ed58cd48ce","946b89ce40","999e679d45","b0e8767f2a","eebf2b5865","b32c7b1dd5","f7a395c2fa","2457692a6a","6ecb78c8ce","bffb04c472","9d985dc259","ad7ba4dc6f","9758449a85","1d4bd8fff0","fe42c7ab0f","bc88bc0183","1b0277fcf6","1ca6f52484","05ffe1f428","b34dba7dc9","374ba79475","4c37fbaddb","70074b5a19","30a74a80a0","d80fd26c27","b29f2ddfab","9207c3200e","53302789d7","3858f8412d","3f8a56649e","2bc97dd502","11312279f1","22d9b282b3","68ab28993a","169ee44f3d","ff50013078","b51a5c7929","e325ce8f41","85a08f1aa6","5c57b1a607","1213c0cfbe","365c602cf0","06ec67d7c6","ba0bab134a","037f70a408","febc1aa588","3a5d101597","8de75702a2","47ceae8c48","e7a01d4ddc","b8da07506b","d5b7b456a3","154428f0c8","8f2d909625","8a2aa89a0b","cc96c74264","8643c14590","f2569207e3","7d465f87a3","a2bfb76319","930bb578d5","623cf79cdd","5ac956382e","78224fd59a","da87cddb2e","bfc4d8a981","ff60fdd6df","6b7befa314","f9842502db","f1c14e2874","3391c71369","d82f4e8b2a","8dce4ceb37","74ea3d7f84","c0c73cfccb","f81ddb93b0","730b1a41e3","341bbe6149","80903df31e","89af56311e","681dee5028","607dea0cf7","b32461f415","15d6186715","b7c975952c","1abf99b563","0af5c533a6","4f792ea5a9","fd5e2f850d","a08f0aa868","c3becacd68","deed5c9dff","5c79f3b266","42d48fdfd2","f881a23258","8ab595ca4b","ee060fb1f8","4b49ba7fe6","d2bbd28231","8106f149a5","2aae41de2d","866f0276fc","8cd4ced41e","ef54e2a393","4ffa84506f","741fd6021e","d211608e72","2a53824b67","f4897d9f8c","722be739e5","c6c87b29c4","dc3c61f1f9","8201f55bfe","12a0e5cd76","fc47254a3d","6ea434c6cb","b154dec874","c6c87b29c4","dc3c61f1f9","8201f55bfe","12a0e5cd76","fc47254a3d","6ea434c6cb","b154dec874","9adb6f5d3a","aafde733ae","fa61a692af","a8e07d404b","f55228a59f","b1ef2d1e3b","cfc9765433","e5907592dc","633fcc0964","2301acb921","2f950e706f","83367dfd99","ccbc6b0db2","7c000aed8d","cb9f239250","8a7d6eaf4c","b3fcd7251c","6bb8dc5d3d","8d34d45e2f","ef8759c0d6","13cb35e2b0","f355ae64e8","b812ee9365","2ef08531dc","eb15c849cd","01674486d1","c3873b013c","39ea284fd5","20053b6aef","a272b60b41","475c875792","9084ef8709","0130a5a8d5","14243a9d06","eed58e94eb","7e7d12e95e","fe298ac94a","e0bca0e345","b05e314ee5","11304bdaa9","c8883a05c1","8238e99911","97e7921f7d","ef70b6efe8","6be15fcb89","81c935d961","5a02adb320","a225771039","f30ce111bb","70f7d806ba","efe7139d7c","2a367a4f5b","0bba94484f","af006055d5","7b223ed7da","b9070f78be","19c1e2403b","86a951cbbd","83d80b5b3c","b17f68dcba","f309801221","08dd8bc205","f62a0764a2","864beb7195","b9dab9d861","8202b3221a","32a5e60c18","3d1f406e57","c842b8b185","4cd09c4264","4fedcbe465","239da6dc47","7d6b0399db","22669bd71e","cca85fad98","fdc85db535","ddb470145a","b81b0566e7","28a1283d8f","5fef5e8f7a","a23645a2a2","38ffa7ddcf","2d8be84b25","ba73fef36f","17806ec076","6a465a82c4","dc4b5bcd92","c891e4b86d","2f4419c125","1bcf283d1f","9f214becb1","eec62ba94f","dde2fe115a","32c4692910","c95e1ca519","35109edc96","ae9a3f593e","1fb12887eb","f9929e1d5a","ec1c295676","967c5067b3","c41fd920a5","86469972ef","75a068d51f","0516666f3a","eec62ba94f","dde2fe115a","32c4692910","c95e1ca519","35109edc96","ae9a3f593e","1fb12887eb","17806ec076","6a465a82c4","dc4b5bcd92","c891e4b86d","2f4419c125","1bcf283d1f","9f214becb1","70ec12ec1c","95637b0811","a80984fc79","b7797ec530","dcfa6905b6","b9a3baeb53","097d38b6cf","2a8b7d4175","57c73075ff","8f9bf53892","a70d10c300","2a42069709","b15d79d1ca","1c0b5731d5","c8de36aa6d","ed2d2f728d","596b35e86d","ff1a718fe2","ebdbe331c0","6d04bd7e46","d44149365d","9c0cb758d8","a9ee9dfe91","2c2cea47fe","e9f549162d","5ad5dfd0b0","9e4110d6f0","a663e941a9","2b2ed9a0a2","e7ddc264fc","5f544355dd","1ada3ea8fc","baaa3cc35e","fa26ef4ca4","ba163a8a8e","cdc6356d6a","132731464a","4b19833ccd","a0083c44a3","efd5f0e75a","33b7194c1b","985485b7d0","faed8942cf","60032a9b74","8d9cdccd11","74153f6e3c","07e74fab9c","9504938cf8","3124c637f6","c00fc5bb99","b4ab5f07ae","7161aed0cb","1774cb80e1","58678ce9a5","6fa499e456","b937e35738","1631d12cfd","ad050553dc","fd767d714c","553f88db06","0c17d06e32","c982b6d830","5cb8d81fb1","cedaac9603","fdf695e52d","6238e89212","40b10cfdbe","75b29d4ea9","358d4a046c","d79fd98e73","abbc501d45","2e77306d17","428bb04415","71d80ae1fe","d01e047a4b","c8f4894e67","df1cae1d16","684e4704ac","d395de5db8","00872bfce2","ab300155a9","3f18e0375c","49c6abf6c6","250aee6785","e8f9ff0209","7e3726bb40","eabda1b8b7","f08545d489","b421eaa7bd","f6042e632c","8721a84111","97b62ea9f8","b30f5b54d9","65c82a6ebd","6e77247aab","66c5796e91","1139b8cf24","2cd25c1f31","cbee81368c","f598e40c00","c570234d3a","d4d1285e73","040bafbada","fc8c1ca091","6782e406c3","b706f589ab","69aa4c4a4b","9234b1c698","01e9d89540","e87fdcc913","d6bb76879e","2d58b13812","9058e85fad","16cad112d1","f7decab30d","ff02ee3d47","51f544d72f","e5c473bbc8","6d7c041097","a934d85241","ed58271412","3ebc6eb282","19d98b1189","111c63e23a","c117948516","cdd27cadec","9eb9048266","3fe31ff6e0","e3d01fcaf2","461650561a","af49838da9","791fde5cd5","fc1082e538","6b7a2be0cf","d6618ccd86","e326a792ad","6e706d0b62","11d58882b5","edbf8c06bd","7070ba2e94","632e738e7b","91e4844c51","c107567502","f81ef5ce6e","49a95834b4","d57306c7f2","6bde1f5d56","a934d85241","ed58271412","3ebc6eb282","19d98b1189","111c63e23a","c117948516","cdd27cadec","be4d045b68","2503a6a8ed","65f8143c37","dde81a9c75","c324702ec4","d47788cb19","c9264cde69","895214664f","3adaef17ca","a2a7f1d8ff","ab1cf94c31","26dcc6cb0b","d300b900e8","3fd0f92172","7baa2f0d7c","c8e060b4e6","7ff4d40186","2ecb2638f5","11a958759d","dde5ff504c","d0fc63ebaf","86245b9c81","902eec2363","1789f82d67","35e7d75a5b","3b6c6a6f1a","1615468ced","a7b66010c8","1f1a612384","ed5f2757d1","64cff861c8","0b9536dc3c","19e8c45475","426cb04630","476a0118ad","ae37868041","6dee4518af","ccbf467c7c","8583ccc9b0","408480cc6d","8a9c5291d7","35d2b1752c","7c326f16e7","0ccd5ae655","b9cc91ca59","efc2f811bf","72c3e7880e","ced0184b5f","2b3254c37f","754cbbd301","700fe95beb","c5e15bdd50","f8cbdc4700","07629d6225","c9b5e590fa","497024fd7c","2e2b7dfa8b","9b2100ae29","8b1325134a","64c9d9aae2","f215d1ae90","a814ac51ef","c42c7bcaf0","08e686ff26","49eb2a4bb3","1518f0ac63","bbbb4a8198","5e3a7693aa","777a096440","958930e7ac","15ce10ca78","a3a7696681","b4d66541ff","beb6699762","84cfe1bd36","d5e856595a","6b8777e0b6","f8ff6e91b8","d2d4fac2a0","deeb758277","2f4c80bafc","f8482bc74b","a88e5d43f9","ba068b1968","355b8a6fd0","89b10bc465","830ec5af1e","028a487525","625cd8e335","0981b24930","15a13885b9","135e746c86","89a6de5329","69ffdb9f29","efd46362c5","9aaa36877f","a4bf59fe94","2dda7af412","f450540187","324b767717","53b9b19359","1253c90df6","eb8421d353","5966485c1b","5db1c1c743","8c4f80d1fb","d604cecb82","1322aa4ce2","b46f920087","40090f530f","ecf99475d4","b3fb622c20","fec000ea54","22adea0191","d33fbc1ac6","81c9419d1f","9fb52f45da","5dd682afdb","076054af93","d63c51f3cf","51e8057b65","c9023a2f07","51488faa03","e4ed4c4763","6e211515ff","80d5850ca4","1f9dfb801c","53e796960e","d8b45f246c","9adb2577fb","2ec94661a3","83fe9cc5fa","7cb9e62cb3","cdaf121a7a","44cff580a5","f28aa36149","86dab2b424","13a23c5aa0","1a3bd0a6a6","15ec051344","a1241b0f63","b33a424844","a44f1d51a4","0b3e903bbc","09008f4801","d94dc3283e","4f2add46f3","5651c34e71","dc6f398ac7","81ce147561","2e43772311","619f7e18f5","98c1cfebb8","35ce12cba1","b6b8ab1798","9dd7ec4f35","c7b871497d","cf8e026a79","11474590bf","8dbfde13ae","a1d5457a22","e8c0f9c804","866906d856","2609e6b65d","7ea8c28f05","c2e1944324","53e706bb00","e34db54b94","106430c62c","ceacbcbe14","8d7ef06c74","f08130741f","1669d02e12","23b7969929","89cbf9477e","2a4ba72b68","0823bb2663","be6985fbb5","fdcaace319","7f01136f69","97aab8ce63","7de316f5f2","b81b5ead40","1d53fe27dc","6716b31217","a0f34ad08d","35648888e1","37eb29a46d","10d575c1c3","dde5ca5cdf","9dbcfebca3","eef06c477b","377ebff245","2eae77d04b","679029ee86","40c0efebbd","15a8e0ca5a","e3c0329b9f","f6d28e03c6","682bf02a81","6ce69c3cb1","b19d6a6991","8e1249c9a8","d74b2f2ec6","90f92fda29","f4e0dabadb","10b99ab05f","4ff51ac672","e6667eee99","6eb3f89dbd","7dedbc1d54","c47ba49b62","1db829e4a4","32574a62b7","f4368403f9","e1233b8866","76fd006607","3aea2b9f9f","17a2653437","6317e61400","1d507a6448","04088a8748","aea002bc95","a91d0c5d69","5de9a22e11","ccf18833c4","e5cf2fdd66","8df4040e4b","9bc763aadc","578d045a85","378e8427ee","ec97ce7bd3","e8ac1ed366","f6b1ca59f3","1327d08672","cbdae97eeb","03e68ae1eb","babd0ab49b","f006bf639e","7e6af4f585","78c22cc25e","b02b892cd8","248f168d47","08fdc03bc8","d1509f9402","f4cee63230","89cf954a04","d3f86bd031","2b1eb6ec22","9cdef250de","fe41437536","7f7ac0d333","a83dcd865e","55bf41744a","f52bd444fe","ed3f496bb4","7dbac9ca9a","30ecfeb583","b9a719f2fc","282cc0c107","dff11b81fa","45ffd11f37","9becc1d52b","51c4723e19","c10b27632e","2200f222bb","4cf0e2c4c2","c51bb298b1","ecad074b3f","0e22443bc3","38fe0b2b67","71070ef57b","c67321727a","29b44c80a6","4da17154b2","2ddbb1760d","c457dd62d6","e0abe2bb05","dd25c45b2c","c71a3d60bb","e9425f0976","ce4455d698","779108199e","c7f8e9b684","50dda71486","9894d53bf3","b1c2a90425","cd1b2bba85","4bcc800934","4e2be6f2d5","8e79f17a88","0b3bda92be","90a22c34f0","530f57cda6","2ecc3bdc61","676451e29d","615649c756","64f445395a","3ac03f83c7","1ea5dfe317","ce77859cb2","8775d03d5c","ad30370eda","cf70f848a1","56f7f8ca25","d7782bf1d5","14e44202dc","c20d0cba4a","45bfdf0226","70a6dfe64e","258061ddab","ff63f63f05","c59297285d","b11373b517","64b09c1630","7a86a6186a","e9445ff6f3","d4038049a5","68872667d9","abfa7313ec","02aa98351e","be6e91a3ff","119713dbde","6d00978115","e2ef7a04f5","7609407bd7","6ce4e1bbe0","eb49b6dded","d811cee38b","9f8dcf4dc5","485e44d2ab","14765f357e","3ae3e50cf8","4f5ae0b4e3","ce4ca03c16","5bb401726f","149f5e5742","b763163a59","91f4e2a058","13c0402515","ab8980e2b9","b3844bd1a2","816094b636","5596cfebe2","5d2e057fbf","717f60cf02","3088ad4b43","9b841367e1","89b952c28d","1ae4d10495","95e8ee8226","50ffb57112","d51fe1b5f2","9300cba268","28fcbbb52f","c3b498c6b3","b50c20b0d1","307727523c","b92fec1a7f","8fc01409a2","4587b114de","51cac10836","75efea86ec","eff4f0cad4","949d217606","335e65c71a","2e4ed20917","d263fa0f9d","6974ac979c","4992a58ef4","7988575b67","36b32777aa","c5c18b9dd3","a2e467d9f5","3f180f97fa","8aae3bc05b","7bcc61d894","4c550fc69b","710cdadb32","22a496e279","9c5009d013","a7d620013a","15d0cc3db7","00aaf77085","0c60cbbdeb","8bb2c17e61","4ea37da9eb","83d400c2e6","b93f1c617e","eca65e967b","c2fcea4587","5b811897f5","334def86c3","5211051ad2","c3dc0ddbc0","276daf941e","8d0e85b902","2877994479","75e49ea7e0","54e7029e00","9f4ba12478","317cba294c","0cac6f2466","51adae2f81","ff32f632b2","7b7f60fa9a","3bff785cfc","be49debb47","50ead39292","2345bce49c","2330546724","6aa4a0caaa","35262622d1","8216bf48af","207a8c11ae","eab37c9754","9f7e1405bf","00860ef81c","6e67b81700","5a0986c3bf","03368d274c","5b4d9f0183","360e9bc934","8e12b77ccd","099cdac91c","8c5377c99b","95ae7c5341","03368d274c","5b4d9f0183","360e9bc934","8e12b77ccd","099cdac91c","8c5377c99b","95ae7c5341","f177666bab","988f7b7cd1","9ffa760d92","4d47d8102a","36a8374f2c","658e6f9899","0ad937f12e","1ff2060e59","6e5bd949ec","7d9ff1daca","74ba3913e6","dda8a6d9a3","10189274b9","51cbbeb23f","782728c51f","0efdd36315","71c6f46060","6a350a8749","506aa65478","dddef67c57","8a46befd0a","64f39bd86c","f9a6b1a1c0","db51463608","9ed46ce444","0f7459cb44","9a2469c0f9","12a12dafe0","b6129ab965","c8a04049c9","09fff3ade5","2e5f36e2a4","c38b474956","2f2b28313e","b75530a10c","9f2cf8c7fb","2a7eb67dbc","edc0c62b46","aaa16078e7","5beec6e709","e33a5fb02c","890b732321","9e9eeb7c0f","6f74e09a8b","1891ca1a9c","e77ec282d8","c907f216a2","ac4c7ee566","8e1bcddf12","ae40aee30f","46095b043b","0e52bdd92d","9246dfb4c1","709a638977","cb6ecc3a46","0d86c5d645","26e8f24aed","b08d6da5bb","a2a1c5beaf","ee7fd17823","e30fc6a6ca","04d2b01240","ce4e57a5c3","b8a197de3f","24a16fbc72","6757b49db0","d7397ae010","ce30fba070","e47a697ee1","6796717d23","53422484e3","2cfbb10b2d","dd7c100be5","05d77e488d","448c960fdc","80de3f5822","40bfeef47f","d10d056ef9","3529a1d5b4","27c671bb27","77262b6419","0bf9b636a6","2bab30c50a","aa1c56c040","b60882b38b","cffa4f8695","63bd2f241b","067f1d7b32","6f1a1c1d4c","69812c0b0c","3267d7acf3","d3441b752a","eeeb239c75","e8c8362d14","3164c9d5dc","993e056f12","be598f32c5","dd8fbd4c80","1622b8f50f","e0d30c938a","18c28e8df7","3f47db48ae","21e81dd48c","165d3bb418","1a17170a7e","7fa278f5f5","7f001d04c7","71cb6a8809","846b4430db","ffbc0fb4d1","1a09255358","f617853bcd","b1b4717705","3536de1652","1be6387ec4","542c474163","f6ee730e3d","e99e44e28a","b047e32042","ef340d3a26","b7250320c1","fdcce381ed","074b2bd7cd","df1797408f","65477d0bd5","f77dc5f87c","56d122c170","7fc7eb8cb7","a592dcb100","844011b88a","eab657db31","61bd97d44f","8fa86df0cb","4f83f8d703","96a73de186","55bac309df","0b73538833","fe2cf957f9","0dd59188ed","4ba0adb603","aad9445299","c63e7fe8a8","39bd9b7081","09df684bb1","1423d609c5","3cf4b1d70c","20ad122529","f3e78be09a","e5c0c8971b","4549f22e14","396f1a3cce","fef734fd46","e9499348d2","b20a5ebabc","e80b2ab824","c0de899c76","b92414b341","5dc18a33e9","2a379077f2","6b10ff3f99","e9e2a285a9","a5cd2c3c30","5bfebab43e","ed940dd529","dc84788fea","4b2737b2a2","b71fcc567c","466ea1554d","727827b0df","e217848428","e9d9318d26","87e94d5878","89cb316921","47c33e0d3e","ddc9d59869","76086c4d2d","e04cfd4103","3ac80f48ca","3171deec3b","3e9b155730","98c8e82269","058fd5c0b7","76086c4d2d","e04cfd4103","3ac80f48ca","3171deec3b","3e9b155730","98c8e82269","058fd5c0b7","727827b0df","e217848428","e9d9318d26","87e94d5878","89cb316921","47c33e0d3e","ddc9d59869","4207b7b449","0fe1799af3","d0c273b158","6bc7e3093c","0e5aa4d5f5","44901590ab","838737c3d0","d40f772d02","a978a872ad","14f7c2d681","b325b2f556","34be80e321","280d979282","8db5ddb588","c7b2a0bf07","462f155a25","bcdbf6dbac","a4231ef6a0","c02f2868e1","5e05f17809","20852bc011","bb47c1c6f1","4764b38839","0b221ef84c","5803aa54d6","bf14ce3a30","209f2a4f1d","bad18ec97e","59bf2f97ff","2a924e6175","61829f0470","5a2c9b7f7f","e6d29c081c","9184db2a94","f8c931ed37","55fbf3b74a","3bbf279d82","067ac219a2","9e9aa190f8","504b97bbe3","f3eba17da5","df4767b47f","bb47c1c6f1","4764b38839","0b221ef84c","5803aa54d6","bf14ce3a30","209f2a4f1d","bad18ec97e","d7d7b70eb3","d0da7b94f3","7da1022af6","f4d16a250a","db33dbf365","57a37e2125","3d9b194fe5","0e89567678","86c8e53202","f0024188f5","fb48f6370d","07e8a6f4b4","b24a5455d8","e3750eb18e","49396ae843","003582c04c","4278d0e89a","d6059cb508","a81bbdf298","a5cae92750","4bb358c4d9","bc4a4093e2","cf73de2051","1c09ffde6f","68a2a3f162","0faa295095","43a90d8e90","4a8b1af24f","8821cc4c00","d3ba760163","fddfb7e01d","2992b89fe9","70b21bc405","fc01c2116a","b12cb3c62a","375b16db3a","13bdd79802","be080250a2","0b2c7f578c","ad474c1a97","3351617c28","0fd50d1abc","268117d445","5405bd81bc","3c33ac4572","04e86d90e0","7b66a86ace","ee2fc5248a","e0cbbb1ede","57f2cf8a86","2786bfa1cf","1f15b2d52c","dc76db1913","e54290bf99","452588a062","712c48d9f9","d7a17b4629","4060520053","2b2dbb133e","34fcb672ca","06a07ab3ff","e1137caead","6a6a101c13","470a3fbcdc","0aae254b48","5c89e2564f","cf103dd9e6","4b2f5ed539","24b218b841","333a9659f3","3ff1accdc2","6539b8a1b5","21b4322a64","04954b9229","a1f84f6a3c","4322ba457f","39ef495680","5fc3ec3ba4","6082ee23e1","e9f2f1423d","7aeeba6646","2603f133cd","ee2eb31ebe","b9c7a885d1","5c4ee05b38","5a9c43aace","31a75cabbd","227b406f0b","2568068681","791f681db8","52d8792458","b11dfb3a04","2101af8959","fecbf17114","b31976bbaa","49d6dc5786","b7fc2e935e","fe5bd0954b","7503acb3a8","f0347baa91","21c7779d5a","2f8f95c70e","48d1ea6c03","6b2012e187","f4cf06dadb","b11dfb3a04","2101af8959","fecbf17114","b31976bbaa","49d6dc5786","b7fc2e935e","fe5bd0954b","48dc209e4c","120f9f9ff8","7f726b5d2d","5416f386cb","da6fd2777a","7f78a80000","bfd5c256b9","fae4879748","0c18f7dd3c","9177a32794","2eb7ff6cad","48cb2e9b37","eec2c65478","e2610b151f","3150537ad3","2278f87f77","fa3dca8bef","4cfdce5906","ac48b71ee2","428aad5615","4aeb873796","2bbd1191ea","e5911e741c","6da7ee7a6a","75012f19b5","3717e985ba","378e18d236","44445027ca","25c29c805b","50484384a1","b5cab52cc3","4bf7efbeea","e796b06e02","976e50f247","91ad20c4f9","430a73b992","7133a78c16","9eba8fd32a","cc0a9a3668","dd0e50376e","eb26a33e34","7c13974150","0ebbf8ef30","a5a0ee0cf0","b2872144e5","dfb79bf37a","9f8b3b0804","71ba28a4dc","fd5a634af2","d00805bb8d","b3bf02a1cd","76eaa795d4","c1af83e67d","632c55edaf","9ca0a32bc4","6a06c6d6e6","e47d3fdbd8","1459553fe3","bf519bebc9","78544f9306","e7a7b38322","24e1a7bf6a","c9fc21f105","f99733287a","ff835aea64","3b949b3990","a89de5b228","40343071f2","d6941a5bf9","b9dfe86329","b1b3956a97","7e9631dec7","6c66b8256c","f4b867b934","35e363a0bf","6556978a75","f26ee798a5","3eb04414af","7649e95593","447a74e5f6","ecb29e502b","9d9b7ea49c","2c946df3e8","2d56d2fa86","f5d83e23a4","a7db087a5b","b24328ea79","960ed6f168","dadd1fe419","959b5dcf09","a5bdda96b3","3708603580","3b7ac4d7a9","d6d75073e3","a0e3405683","fef0290ff7","908c2ba549","86bd18e1b9","3eb04414af","7649e95593","447a74e5f6","ecb29e502b","9d9b7ea49c","2c946df3e8","2d56d2fa86","f99733287a","ff835aea64","3b949b3990","a89de5b228","40343071f2","d6941a5bf9","b9dfe86329","ad1c4c002f","b9e27895ce","de0631c706","a42a276536","8a4e8ba9bd","30e05ff62c","cd668b221d","88c1756305","dbe8847c50","6ce24b4b62","9a4f99b904","996576ca92","a6e9ac2880","1491a4055b","228fd1c692","63b739fee8","dd58fff8c3","c354c74313","15fcd17edc","6fd5ce0441","a02e833dc1","d013d9296a","dcdb93ffd3","184b1c130b","1ff0cb622a","20db0ddeff","f255b10926","2e68f3c0df","08ba27fb42","a67c345b09","7d54c646d8","f1d5a58035","a2758739b6","3c8bfd9087","95d3ebdf3d","dce711ad31","1a7944e221","053226269d","4196698539","266e693c0d","36b6afdaca","b0dc484302","a4c7da685e","a498d47912","47814114d5","ce978589bb","2b9e854228","0d4b439ca6","c14b63d135","e75657619f","f7d7facfbe","e7f2b8b816","1488d4533c","ae0bb3aa8c","a8003f30e1","ac26f6dc39","cc9ad16e7a","abf375ed9c","0bf5714d36","311dee5fa1","eeff7a83ae","773c2ac493","ea1ca67f93","b457602b9e","488ba04590","6bbdec0fc4","0ec5ba1964","b8ce12253b","4bc4464d3d","ad1f41f6fb","6766c330cd","7206ca1768","335eb1b1a0","65d871354e","c6dcd96565","114dc79393","913b2f1b95","cb23f83cc3","17ec52cedc","f7a1c82ff7","243bea8354","595e8915f3","650e6340e0","7b86309eae","0f73725930","feabe8e11f","b309f4a25c","d2d913169c","2dcf7562e7","02994a74fc","9becb5f32f","10c4582223","d500547a8a","ca6b2f410e","1f388ed345","7c5f140266","1140f8ccbb","6a148cd3c8","85298e0aed","27861e06d6","a95aa8530b","3d58fe83d4","af938eedf6","252647554d","f821e8d93e","2750079b9e","da469f2c6e","ad136d56f0","c20e82c66d","49c16e2822","8dcbbed708","167a32de4d","12ec2ef4d7","fd5b4158df","7dd0c9c1b1","058e439b0d","0db21bc7b9","3de0993be3","6ad99ee260","5da923cc54","0ee5223667","b27160e73e","5eba8b7c1d","74b60655ef","4f4de6ad62","e0219fe0ed","e14b72f11f","f459fa1d74","945866ffab","5c36431646","d8f25df9ab","915bb47301","0961517a9b","c5b9204015","5fb23c0ed0","c099075f51","1354d8b29c","14fc2281dd","285f50a470","c16e29da98","710484ce83","31538eb013","de24955748","0420a071ca","bc90f46860","dff6d15838","ab56c031c2","a56412e03f","a41afd9fab","ac3e3e38f6","cfc7047b80","0a0f202098","cb863584ed","617595aa9b","3352fc37ba","427673bada","cdf86d5f80","ad77dd99ee","58784004ad","13918fa079","e90b58264e","636f746626","68a4d7c975","fe7495c278","312c13d91c","561b8167c8","cdc826242a","3c4c78844c","8250ac039c","8ba1c63765","8c67abbdbd","eb21d2b312","24cf545567","60a9665923","215d92f5d5","9a65f42aab","f08937c8cc","2948ecdf24","d90b07a851","3a7d60c18d","ecfb943305","7765bbb5b1","85cff1d844","7fe682fe31","75d62b83fd","91208caedd","e8e270b4f7","3883aada99","2922123353","4efdd75d82","9b7658c62f","4e59470393","defd7afe44","1bd28d6229","2966d3a206","fd80c072df","98aff56da5","c67ff89139","4e5beeb615","73c452de86","9bb6008e31","1391551fe4","56dded2b84","6706cc20a2","fa9a964e7d","bec4371a1e","44b0f35f5d","b17d50d783","697e67d7b8","c431e48a5f","1ec453851b","c6ae294237","d83aaa861b","fb98346a90","9b2dc5addd","98aa6b315a","adde29179a","31b7fc2a12","f9bec6aa09","0e53c2f14e","a214a6e2bb","cbe0cbd4d7","1ad0437672","3469f00f05","02dd0345f8","5e852c4f5e","6662f2f2cd","e0331ce127","4623accf31","db75bcc6d0","fc837016e7","d13de53b4b","fe281c118a","a6f551de5f","3dfb32d88e","4f3cbb9b1d","07bb9e1f75","b8c9f3fe40","d42391c0e5","8e53f26f96","e67290192e","3155c53912","df27d34097","571a294dfc","97945c659d","aa9582e858","592e6274eb","196b33c37f","254afeecc1","a233b055d5","0645213ec8","007647f2a0","ce334d04fd","b9c87e994c","3956a10936","757896dbdc","3ee9b05692","c5ab53f6a5","4cd17851d3","4bdeb20626","6d43a902c2","34a64bcd7d","4f73357326","a04e9cd2d0","78b7e6b1c1","a375f775dd","d42391c0e5","8e53f26f96","e67290192e","3155c53912","df27d34097","571a294dfc","97945c659d","2177783446","93e7a57b0c","f254fd0263","69d2dd37e3","f5616f83e9","e4252ac338","570e2022ce","538d226aaf","162be4f69d","1fd82400d7","8ca12aae28","b7aacd4985","6c667e2314","8ed969984b","55a63cb4ba","0aa4c77d9e","ddf304ffc4","91e39c7caa","d418be1bd1","2af620c4ab","459224fcee","6b0894ea30","179c2bc8e8","b14b9371d8","1eb56bfc13","c48435346f","de173bfd62","19dc0d761a","0054401306","8f782d8bd7","dfb32f3338","c8f1eeae89","0beb5b4482","6970702507","7d10f77680","5f1ad02637","afb2a7edc5","beaa8664e7","53e76ff85b","9f9777af8b","0b0915305b","cc48547f47","b3ab516b1a","a26122a2a3","5850509270","b2978e7a5a","eaaf06b1d1","d9cc895fda","a5540726b2","b0b56b94b7","86d19496f8","0cc8147493","01267e88e2","911c86df5b","4db15e4278","61cf16bc25","27eecd7b77","09c551f7b8","889a02b6bf","2b7a2f484c","460b567c01","f614c087bf","d60ff35ca4","8339c70f90","2644bc8ec3","e54be8ad34","37ba581926","97e84d518c","77878d9c09","4267c761ac","ae3c904a73","e6703dd53d","b9bb2d7b86","751b546515","6c7b9e89a7","3949d8d22f","85810c1891","0bc3d01335","1cb81da36b","d5304f51db","b10ee9ee7c","659cc0b2b4","cd2ae0b6c3","0b42bc11a2","77a2f76de2","ac13b75eae","09f1501813","007636b4d8","0331724393","76b71405ec","e1e1c3b1cf","8a668ac1f6","fb4248ebae","88a64d0311","aa83b3315a","5add79df8f","e33bc05046","fb31908126","1844c65e55","ae3ed54844","fb8427ff12","7adb4560a8","b058f8e74e","9d265874a8","ef76e82373","ce743910dc","466f9a5f70","26d49ff078","62c32d5fa2","af72208a89","2e468d1421","365fb5fe09","8c8186ffe9","99ef62a9ac","c9116bc4c2","bb21a72257","3853621059","df0a052a18","090d06eae0","dba3b1f5a8","7af4e1bee2","214e34572d","aa7a3f8af7","98cb41b617","94b7d3acd2","7605103df3","dea5d48caf","62c0062b8e","af2a2447eb","821a52acb4","b51678cf88","3c11dcc2cd","d893a083b2","a24c3355b5","9e63820890","90aba793de","4116f4ecde","c10ad9952b","3623084e5a","1639cece82","27c379f3c7","5ccb682f93","462782b1d6","5942c49569","42165d77d8","9199b2d87c","1c8fab6062","9c9c5c1cfe","1ca6d6ed2b","d821a61899","ef2ab9010d","44f0e796be","574bff9658","b326925195","61d3c37071","54499888f9","dad91cb727","818f397953","7b13b66d4b","a30bdedcd9","fc072fde15","d85cc1662f","41a2f80ab9","bc06828b8f","368b705e14","c4ca655f39","141d6b5d8f","373a6cb4a7","9bf82ab8e4","53d0a139d7","de5988c666","0fffdab723","571a7de0da","549d73e228","3f1e14b01f","6aef2d50e0","e2e622e152","597ea199c2","707bf45bf9","7e79649317","d2669d65b3","4ef00bd521","f4ae64ccfd","58a38aa632","52bd2664f6","631bfa1899","c09088aacb","8ba36cbb22","ebae3c5af1","e328be1242","a1af7fb4b5","0c40c64a3f","e073ee0144","0df20256d3","eff4137542","151625c186","83bf73aace","2c0118ec75","a474ea2565","46c4929906","57075066ac","5fcaff91cb","6c5ee78a9f","78df511e27","19688e0d30","3a65d344c5","f60dffe387","5bee581d8f","24865494fa","b0965fb68f","bb81bcb576","aac7e4a3ea","c99b99c3a9","4f0292403c","71b5013826","6c175860a3","1ffc18c7b2","968e5787e4","6e15568e55","df94a54e8b","6db9b1a45a","7cdb61f96d","79459582b4","98b8d55614","e328be1242","a1af7fb4b5","0c40c64a3f","e073ee0144","0df20256d3","eff4137542","151625c186","48840fe882","064b2cc79f","7f74e1563c","c4b2825501","967e466f79","4112f33918","8c77054a9d","3f17ec845b","e75546f589","bdd8b39c37","643e88c12a","69dfac035c","e8a78bc609","42070de96d","6d852d7340","d0c8e08f70","6602813f24","c75de2444c","3cdfa7f89d","ecb33ada79","cd51e02f11","441d60ed4e","0e20959622","45bb610c26","6cdd5a2561","320bb004f1","4705c5791f","afd6ab9f2a","529af86214","2e32b9e549","6326684ca9","715ab7a43f","ae9d362abd","7e51d15803","ddf098503f","2a8338b34d","92c0104351","f4b9a405c5","8102dfde04","5e543646fc","b0a3948888","5adf2b89d7","f6b1a210fc","fb3b163f66","edf9f3eaba","739dfd6cba","3728631699","9b02ca48c8","723b18498f","b8822ac685","6ea769bd9e","08a1cd12e8","75f78e8c3d","f89437fce1","fea643385c","bf948a3de1","b8822ac685","6ea769bd9e","08a1cd12e8","75f78e8c3d","f89437fce1","fea643385c","bf948a3de1","0103d467a9","5fea9a2f09","bf819c5df2","2b722ed3b3","ec7c945a02","4a98111f82","51adc24ecd","0103d467a9","5fea9a2f09","bf819c5df2","2b722ed3b3","ec7c945a02","4a98111f82","51adc24ecd","51b6871fc3","33829ef4e4","ba42abe4f4","fbd1b2a4ef","109ff5076c","baa281dc68","e6ea14e2d2","07f8346282","3226046fac","487625bf09","634f7a4610","698b41a871","e23dd9d3a3","04259b96c9","e734360ff1","c9b24fce90","ffbe1610f7","b88e63e06f","9bc69e5be7","35e15b1241","051ba25e86","ded50bb7c5","101f8abef4","fd7ced3acd","171c975931","08e992c5d6","2402f07216","a7e567f248","21113721d3","4baab55f81","d175fdcbcd","35d3902ff4","ae9a22cac8","012014f90a","2cfd7538f5","187fc43dd7","09364a9007","bf45eb45a6","f83198bc35","0559328c40","80ccf0321a","83d8fa8ccc","07f8346282","3226046fac","487625bf09","634f7a4610","698b41a871","e23dd9d3a3","04259b96c9","faed6625e3","a84eebf3d5","d7b9f955a7","a839ff993b","e50d3ca384","c5dc9fc159","943c59cb22","3848b13159","7b3061c0e6","ea56e61449","854a891725","f0e985f69e","797541e073","9e291dcc7b","74233fb943","acc92fcc50","b534540373","2357813cd9","846838f48c","dd163c639d","9823672a63","289bb2cf4c","da0e7954dd","e888b5bc93","b6636f9b48","4f3fb035ca","9715e03f0c","c18523a5c7","9346966fa3","2f525bb804","5f3c3b1c26","96d56963d9","38a59fe129","0629a405af","9ce2ef7cbb","59b3070fdf","d8056006c1","9be6808c1e","5f7e555d7e","f6210b7a4d","17e823179a","e7dde72b60","59b3070fdf","d8056006c1","9be6808c1e","5f7e555d7e","f6210b7a4d","17e823179a","e7dde72b60","23f4a2bb9a","a134b77b4a","5d2787f968","8bf2ae8a2c","5f123fce42","934cb80bd5","bf613b8eb1","424b73ae23","4a9aa9d211","550f28156b","b434b405e7","75164d4b0c","811f6cfb1f","8d955daa4f","f846bdba34","5e1a8e63db","078633da9b","0321376438","548e4ef86c","c37bf4f0ec","9a2bf51f67","297a2b7bc1","3cd37a4b8a","9f9e8f0e94","fce51aea6b","9f40be4a3d","59122f536b","3a1d2bba2b","aa8c6fca97","7466f1a6a9","f6adddc69f","0946b04920","fcb8c99ffe","e3bfe62bcd","2edc153dec","c915705c5e","a1b8f0b2a4","4633aefea3","c684c2438f","b8dde7378f","8af2794577","38ab7e80a0","ce3c7770cf","9921915565","bbb233ee4a","2dd08e4de1","79f191778e","439cee79f9","ba45ff6a48","aa8c6fca97","7466f1a6a9","f6adddc69f","0946b04920","fcb8c99ffe","e3bfe62bcd","2edc153dec","05d64eb48f","5421ef8530","b62b70e4d8","792881ffed","682bf6e3cb","78620a3590","292e9bac9c","3cd904d8dd","060fc70b12","a9475a852b","5a3c349c10","6520e48a07","a03f576c7f","ede8adcd3f","706d007180","2ac6d04de8","ddfbf27cc3","b506e0a149","f8c58ea60a","d51bae658d","0d741b7831","eca897d31d","0cdf123178","4400e60e8b","f7bbd32216","c3d078f31a","5f893952b5","27b31539a0","3d8a84eea1","09b9988003","bd46937eb2","be9a0d9dc6","96c52d05e4","e6eb78b36f","54b00d3208","cc06145e57","572fffd3b4","c1501454ae","d0ca25297b","17c17d6721","f246724492","813a8ea953","e53fb01ea2","1004b1874f","d3c4735edd","9b2676cb65","01c470c358","c4d2b213ad","b03be6a9df","808a5cd30b","434ebe090e","906d2b32b6","274c6c6b8d","e17f8dd1ad","cfd997194a","9e347244b5","4082bdf388","395c7e0849","b369232b7b","d35c207cd6","e7db85564b","e96f9a7d1e","212a17ed0f","00eb03ed7c","cfd699c654","915eff827c","308777c8d6","b2f41ede96","a9830d4375","ace0dc32ff","6039a61f12","c0cfb4cfbf","9961892e55","a152b1e9c5","89831e0962","208611fbdb","791345f834","c2f6ed1924","cb711e315b","bbc03f781f","6dca560dcf","937c046de4","48d3db04d4","312810073b","5cdd11e629","4e26a6b27f","101e429daa","634a75b2d4","936cf0e49e","618e9b9774","0e447040a2","7663886ea3","f6a114fb65","5e8eb97720","2e494167cb","0ba1d0e39f","275a9fb57a","59f576d0d7","8e98537c8c","a905be71c0","40972a7a0b","410c5b87fd","385468efe3","bb852ba312","fc4769e749","2d5d4d80a0","e069c395af","d1f45cde00","40ef078831","14ccd00889","c43ae98d1d","1804a77ef8","47048fa222","6abd7fd275","e07cb887a1","0912ca2dad","a20569ddc3","b7b9720f74","8a51d04fdb","40a1b33235","638dd10266","fedf1f82d2","d268fd6a6c","3d47673ef4","e4db7bc34d","2766113be4","6d96d48475","89cf875e79","da24c351a4","927692afa5","411fe5cc3e","5cec9e1505","1324b79fba","d83f9d8df6","5f9a4561f8","5be5c9a1b5","d51f584031","d866ee5cbc","156102fa4d","4fe8625e9f","cec14d104f","73a9939524","3a5a8cc4aa","bcb8eab5ec","001b53fa06","59742a8407","3b452c6e99","e04f9fde4d","580d187662","bb312f296d","4c6268ef41","4187b395bd","c205b0e260","e3059362e3","de7847bab9","d2d28ebf4b","fa4f4f3d2c","b91d9f7539","58383920d8","2c1c900370","36cf9b613e","38c4e29451","1ef122853e","16a85d4f43","734dfb46d5","aedf1cb828","3474ccf6c2","12d58e07df","346c7b251f","7535efa216","f740cc1b86","a85e6c4a20","be9ac8b7cc","d99a0664fd","8b7edb8eef","644f24143e","78cb7e94be","5227ebfddb","a0d6a45a8c","c353f13692","488cefbfe9","a22b3ef290","8f2792bd93","37b778343a","9323f83dcc","1f1dfb20ee","29ff2bdb0b","88fa309c3c","8b883c8586","e592a925b2","3afabfc36f","e3f1bc549f","6392750628","cb808821ff","1cca5eb88b","55beac4d49","6f82bd2e95","97bbbc953b","ece721a555","3109093da2","b6257ede71","708f83b267","4ee486f074","7f2835bbe6","cd438103d1","b2d869802d","6bae3d5c74","9e05796d2d","51c44111f2","35ec940cc3","3dceb56621","e19c2b6177","810f8b5119","4dccf7f682","27ebae0eb6","304cf03dcb","3abc84112d","94cfd86d1b","0a338109a5","27a2b14ee4","927284042d","121832f597","a0cf10e242","4331fe05b7","63bbe19539","5375302dcc","69f5ab4cd1","e92592a8d8","e8eb33142b","b74523cbd8","3a6e177b23","09804495bb","b019ce9b5a","aca2d00eeb","f3e1e79dcf","9ba47da656","fc444b8781","39729b96ee","1d77fc2a05","fa0f74a571","bf0eae35d8","cb79a91c67","73dc275cfb","b48e310bf6","8c72f86a5d","6aa55b181e","af28b7799f","bb0bb2531d","ec722ab89b","24268987a3","0be6cd9653","2b389df0e2","0b86dd9a19","e757ed8644","886ca893f7","351fdde661","bfc2baf133","001031e655","0cc72fd4fd","0b7fe3d85a","fe44171600","501a39e9a3","6551034d0a","30eb51a50d","14be346f50","e43aef2881","314fd45934","8161498cd4","e1e143c83b","752d82c2ba","fa5a97bd4b","bf7defa1a9","0d492fb5b8","0b1dec9713","39d4b9879c","ac24596804","268441e363","f21d2a524f","f41d1fdc9c","534235cf42","0563e4ca9a","1764a8b8b7","14ddfed387","b0aac724ad","11fe8b05f5","7b36cfae65","008eb8dc3d","4c28f30d28","55f50f953e","4f530c69fe","c2f22ab92a","a9d768e97c","dcff2c0a34","7d468da0c0","7786a46c56","525c2d3409","7a372dffde","c76fe5d9b5","6c5de8269e","ffdd868e4f","76fde68e42","2276a72cce","09d3919f75","5be3379d35","351d3d9f34","b79146536a","f2cce209ce","5314519bba","8c1b3ebcd5","12909c23e5","737312acc9","7b4fbe6a74","f11b3060ce","a1bc2b2f99","64fe2eaa8c","63a29eac2a","55fa77fbb6","af811edb63","9cf6038535","eb61da31a9","c5fc880e47","3c670c0ac4","7d728c0cc1","c05f025c7d","9094173ffd","21769d3579","822ea52c1f","d8069d8ee2","87ea2d0b4b","e8f9a68fe1","1caaada8bb","987647dd04","6253b27522","fb047be167","acf0f4c3ab","37243cf223","6e69e882ec","52393b973f","cebaa03124","782cc3a389","e9d3a5276a","c2c75795b5","42f9b07640","7918a547f8","6a35c22cfc","30db568156","52618829b3","7d56e4deba","4c0afbbb84","406d1f9f15","46f6af4e02","231347a936","ca893cc204","3c8e6fb8c9","1a099f23ce","98e90ffe34","bbbcdad7c4","28575fc685","aa3c920cd3","1b332a8800","28b1fc3387","41f2834470","6894a72fdd","49546ec359","ad7e0d7082","4ae75269f6","6963a25733","bf4987cb6a","7874cfc805","1fe6716671","8bc233bf43","c402046d4b","3e8248c5cb","d59053b38f","c1111f1a8a","d804decc45","77b58dc954","81ff4542c0","f9ecbbce36","f096b81657","f34008e4c8","3123a33d30","2f10d8d539","c6925671ce","870fff888b","4f56559ebf","88c4c3eb01","6fb3d69b65","07ad7fc24e","c69c509c58","7cf863a2a3","24cf24f349","2475cd5ab2","63a4f604cf","68f13ed8f2","0aedf5e007","a1d54b8ea3","bef0264a46","c07abc06a0","2645dc1f78","15d6f085f5","9ef61182dd","43abe22b61","d3711e226e","736fcafc77","979e8f56f7","358a4fdc03","774175ebf5","1166451f32","43351135e9","bb4da1a114","9dc607b625","dfec8f1096","9f1d6d49f3","035f3eb3d8","168f194fc1","cb305fb599","a110bfa2c6","c5bdf139b4","0e18d352e3","35b5a7ca45","3485ca6524","975adce8fe","6183431cd8","c82c156df1","2a48becbf3","3afb050b5f","3942be1f23","88fa3f3462","68b697a218","24e330ceed","581d9721a1","4962221ff1","5f8ecf024a","dd9956dca1","abb15d956b","830b539d36","69258264ba","5ffab904a1","4a326bdc51","3ef1aab8d6","beb9c27f89","1967e91375","04b32bde1b","fb047bdc57","0032896ca2","b32afec9c8","ce3f6f842b","65886d5e59","8bf61a94d7","a7301ae00d","19c28ba59a","f23e303d70","f3b41450f7","73acfde66e","1dd64cbb78","758dcfb1b8","d321326b72","b174d187bf","cab75a1c72","bcef4029e7","801e87b8e5","9f7c7075ed","2324c5a123","74b864ed57","a4d79cf85f","015e6ba626","0ce4bf447b","e0023ad31d","3083752897","9abaa626ed","ce8f9ac201","60cc6a95cb","3ab6a3fefc","9eb9dbfc3a","f36f01d3df","1f97b9dfa6","45531e2372","0a01a2a22d","aa6b68a91f","6546eafefe","e824816cd4","16e0062193","0bab37892d","060ab1dd46","1240b3f12a","a24423847e","6e56045869","3225c2706c","4a703d0264","a455f97219","29cae22d8a","bcb1ffcf1e","89bb832399","dd777d5287","4563855f2d","eac6cba56d","e6da779d53","658d8cd4d6","b940041ae6","92142de5e4","e3feb047a6","b9b675a87a","094388ca93","f883115d90","1ff4382283","e47dc4c586","440d0d2bb5","da7cabd24e","9aed10b41a","27fbe67c5d","2074bdb355","d14bf6d7e7","8d3d96f241","fbc4906cf7","57ff73d8e4","8bc41cef2e","c47a348132","852ab492c4","3af848ce52","d4893f6566","85db18518c","62296e32b1","5a1a409cc4","684455a1a6","8430f32b25","c84e17ddd4","55dce65487","35699643d3","7482012ac6","75b01d721e","b86d2f7d90","1c72cfddb5","db19c7662e","8f931078f8","2604988068","7e540538fa","49d536bca0","6c08dfc185","25aa0cc2fc","71ac3b4f01","08e08af02e","e9e1a54276","8f615cd3c5","9c47d1a00e","136f425da8","a3d7d08298","9a2ac017c7","95af63bc92","c4696586e0","3c5daae69c","2b6c21ebdb","4810bf83fd","7e24bcfacb","f40661b499","ac6013e7ad","7d35d4b1ac","1d68a95812","85a4cb7d9f","00c14826cc","b8c8886595","e127c1db95","983714ea26","8128c67bc3","dc18c153d5","49c1ab2c83","b429c434f2","11095d7af3","860cb22e76","3ccfa2da36","8c390a9bbd","e1a2175c85","023cd1774e","bc0e381f4e","7a5f65ca9a","31fca21169","969aa7e494","50dd3f37e9","db6d80aec1","6621390d93","fb67493569","acedc3edbd","6d4c8c1ee0","2777f116ac","ebc2e8bc45","99f4e2a26a","2555287643","19f3a807c1","0ca68fbc2b","0d9b08d04b","51d897e9bf","f8eda1ddc1","d91be1dbc8","4d26e4d854","93b3260a93","49b2da5fba","beaa2d2eb8","6667034c83","4f38b4360b","902f6521ce","356f383da4","859782ad47","70cc5158ed","ba497961a3","0abb099fdb","c35343e7c1","82dbec5716","7b72b1a8ea","fb8d0da8d2","156161609b","aa7074ecea","33b8e7deeb","5a3bca7488","00b3686362","f09351a1e9","86553b93f6","267e05c56c","06889ab213","3b28d59d10","4f3c36d338","eb165b6ab6","0a460febdc","9870ea8d71","708c1df465","e6a143460d","5865c067d0","e23c07e4f5","bcd5e18e92","6f3912fd09","d06f2e9ddf","a034da7ce2","c18b43ee90","0785e09485","a3f693002e","7de4a8a4bd","55b7e82d89","41544394ae","0404dd2ecd","fb5ff52f21","a3f53cc7cd","29636d5366","f39a246640","954fc777ad","ef5ff7415f","370180f255","17c52f627b","6e8eec0d7c","123e540131","11a1f14d0b","27993a30b7","bb7c2d61bf","78d1ad5d9e","7e5d83d342","0c69a18000","27ff4dcc9c","9ba5957c23","a04459a295","ff0912d773","08211ef6fe","ed2712ca20","357fae204e","51d481e870","9db126bb9b","f4a17f921f","259c4b8ffa","f64d606772","5a103da7a7","e3babbe8e7","8703120d49","99ef4ca21a","04e71ac65f","96019f9b02","370180f255","17c52f627b","6e8eec0d7c","123e540131","11a1f14d0b","27993a30b7","bb7c2d61bf","c82da87e8b","62d9684f9c","cf0e46e1e2","74d9efbf26","7199fe64b9","8a54b4b69b","83b969c9e9","a30f9688fb","4047d06ceb","c4dc53cb04","ebcaf21c85","3bb81ac288","cfdb7f39c5","201d5be476","93a4d7b65a","83917a0c0f","2d2b646ce5","87c6a40e76","0c0b0cd45f","228afa1ef5","064027b584","bd9a44b178","6a7030aef7","d592585f69","66028bc88b","e6591e3e0a","02ecc60404","a30dcf902e","976552f635","eb140b6639","0aae6612d3","da004371e8","43713dd909","2589229f81","0baa083c20","d361ef5d65","f13f6c60b8","119358e7b4","4408436ead","8ce38bc26a","4ef681ca4d","ed112fca1c","bab37b613b","530121d913","2a700b2031","1bb752e96e","3ffadf3d12","2e783c4faf","8dffb3047a","d2ed9c77fe","e0ea233252","5b44339a25","b4f40b9080","acd7e28672","c3de8ba939","15539d93b1","c85e531bf4","f9b8c8db37","5c4f02c470","f02cc7b4f4","10f7348366","787eff6d70","75c95a41cf","d875c379ef","08e59318a2","a4d78e3392","07a7217721","ab2d0c1bc4","ae573eaec8","c8cf5d457d","788992a1e7","084e54aedd","775dbbaba5","cd05995e5e","e55bb20f38","7156c4a1de","f0590f48f9","b650a7b7d2","72ef3d9838","be16bffd58","ca0ea28562","cb30491f73","2c9673ddef","8cf24b54ee","d9faccdb2b","ff4fa0c8e9","aa1071a609","ec82f7e33f","970cfe8289","c73dcb3e8a","f461b1ed4b","ca8e585691","77126f01c7","24043733c6","f6d2d00a08","3caf86a488","991334e39e","96a0f7a6f6","dbfcac938f","220a6d8e7c","30bdf2433b","0d5d876638","8f9d34cfc7","deb760940b","adcc83354f","2bce8afe65","97f4ebd0c3","080b49c2db","60bb8675bf","5829bc44b7","a184a9ec5a","cded581e43","c01ef9de38","ad13ebc0b1","81a7fc27d6","54005f896e","7847765fab","ece6a187fc","4d598e625d","0925b5cec6","8282fcfe05","b9fe19a00d","5f48e40933","0a93a154ab","234ac6b4b1","5a5324bc26","96f6ba15fa","7fd32838ec","3b41022ca4","95b86251a7","0ce0352698","8789c2d6bf","d18a77d055","3747eba913","6d236aa1de","84d72067d7","42bb67df10","4a376441ae","187fb890b6","f31afc6b47","c56147881b","3ea38e37c3","699be2575a","3b9ac1c990","74e184f241","ebe37ae9ac","a9815d2d11","8170b21c51","5f08a62498","ed3560483f","7f90042986","1c46a8bae4","902b81b417","40741fdb79","9679189ff2","deed97d1ba","f381dac170","b30ab041d7","fdf0631481","5ffa7982fd","4b40e71ff1","fef8be7516","71957287fe","588c5f3fc4","4c9ee2b64e","33c9a1e056","58ac518a1b","7dbc6197d1","9679189ff2","deed97d1ba","f381dac170","b30ab041d7","fdf0631481","5ffa7982fd","4b40e71ff1","351e9fc0ae","dd0990d94e","8b8f019a35","eefa711b1c","7d23f65992","53345b125c","254cca924b","bf5e14ab17","4ff3d205ae","1df6ab4231","4703bf3417","c925df73bd","8bd9942604","a69e6dfc53","7dd2f5addc","7f78abbe8d","d5470ad8ca","72fb8df7c9","e6b2cf8ad5","1f45dff58c","2bbd9702ee","fbcccd7dfb","21842fd816","0ca1e713be","741bd62730","8054b91f8f","fba0b74371","9a07de8588","8e0a5b928b","b74c942415","2a4948e9b6","5391bae5df","c8b53e3077","efce916cf7","d4572ccc82","e20f074439","a9a40ca408","8d283dcbda","7bb35e8d2a","9ada4da611","aab3df48dd","b83e4ec170","e552d27470","7ddf3bc130","d715cfd0e7","05f894739d","07228d9cfa","be6b6e82c6","99d087be14","1725f299ff","be482c9346","de03fe1a5d","5fb4f81959","351022015e","de2bc8575c","d54dd46ab6","b56098e44e","5690207600","4f7daba9b2","845b238a11","27219f5df6","8faaf641e3","8cf907a363","4cc91d1967","01da08f351","89153cb970","c1ff5f42f9","41b8e29382","da60b6b4bc","7958c52f29","83dc4a1c49","76aa0afdf0","7f19aef950","98f42bb46c","4a4db720ce","61225b6d07","9e21327c25","6f801c5dcb","70a10b7939","8683ea8c64","4e2c6f3c0b","dcd71f606b","91fe20393a","26d331c5c2","358693c975","a4c105e138","b730b67f7a","54c52f0b17","4a6ac05245","c083b6d016","4c229c8478","5cb2f5ccc2","3dffbfa2b8","9648caa303","09f83dfc4e","9aab3dce70","92ae84a727","305caac05f","a14fac696e","749ae98e9d","18e49c14f9","b250bcc3b9","609501a336","ce416dfaf6","5415f7bd1b","a1751a733a","8e97130900","9e5ab5f4e7","053ad2f68c","54a2e4cd9c","92c69f1ab3","aaeef760cb","13460ef277","2e2fabe253","da2f5b68d4","c5d7e21f32","ad81e6d2bc","53e6c3cce2","d785a2c194","578e37b0d2","53d6c81739","30c18bba4b","e19617d31f","6a26f84a83","3d389c2740","4e90dfce49","661a0305b4","c8d791d356","8af71943c3","6e61ed3051","f5963c3865","352b426c26","91ce8ba021","7a1ed27400","fca9553c1a","dcee883aa4","5d13aa4d6a","13f53fb56e","136d8ca6a6","2d640f03a3","1b2ebf2349","08b47b9726","67abe85e2d","2081c25946","1a50d07449","29364eec41","d1bf956be8","5106c13427","32dda58215","80dd6ea64a","d04c576d1b","73666369b1","7ede6ece41","bcb5bde50f","5547fc0149","2c3b1963e5","fd804321c7","3be4ae9fb8","6d427e876e","b830b8c034","18f7057199","ff83f2d01d","a125a13550","d70be31352","87e1b772c6","346060fbff","0c41dbaab2","792ba46043","297a9a987e","6a050333ab","109615cf8b","ec8dcda0ce","234da3d4b6","945815d292","c643f82705","483a110a2a","38c25637fc","b65209a65e","b3f631dc20","74dfe29690","3602265fc0","2da4fc2082","9b790a9dba","06f05509b9","163233bd9a","e1af7e5252","27cf8fa560","ed9ef63f0a","1c65b06463","92fb51a39b","7a68c08300","84c59fc550","9e999986c3","c670bb1fd6","2844c59f5b","772cf13b69","1aa333a37e","9ff3df37e6","1519bd5f49","b7d26e23f5","b98c2b8916","5b40c67206","a4dca0f4fc","40927e8ee5","db7692dd46","2429d79d1c","40096df653","948afdb2c7","69da28dcec","032c07ae74","2d366d5688","1b3a78fc15","881bb99c4c","2d92fb74bc","8b081331f9","541f2c8614","36efa049a3","796fe05d07","699315f81f","1159db5e93","46fc439db7","0ffd77cf56","333d210e07","49111a50ac","ec59ec0130","83631d5514","d686bc28ff","13daf44640","b492d87d6e","859793c945","e6c2f08159","2d2419ce52","904d963ae7","49d8e04942","e6254adfd8","b3ec5eb4c3","d470dc829d","09843c73b8","1791a61459","8e21b714d1","cfeb693b00","bb03af970f","07ccb95d05","3dd3238af1","dc8bbbb990","4198adb0fd","fb98cec193","037774ea66","e864a161b5","0b253ec5f6","b45fc41e9a","f8e2ea7b38","44b8566645","f67416d776","3c9871d888","6873a49974","83130d945c","0a2f202780","914e70a5a9","d98a692beb","b8478410b2","24e1267994","d9763d22f3","9ba9db5fc9","db4de56f78","1cda4fc584","927d24b985","ea99119d1b","3790b07117","c497f37a4b","3e61269111","b0a547f946","f02122a320","43133c9f3b","436f847a70","2b04309468","1c9554766e","627ff4fb17","ba28f6a343","72e585e166","b114a91abc","345a29fccf","efb70330fc","0f054793ad","247f554237","6e901630d9","ea3386eb69","e3870ad9b2","2ff4f80d68","583f994b7a","ed47dc32f1","1204a3f9b2","6209cb77ec","10ff386f5a","c4a0949f8b","f6d17ebef1","cf01fa670f","761244e88c","cc643d799e","af0ebdb4a9","c12805a558","e331bf2da3","e6732445d6","41a543a427","f314645758","3b2f7ef0ff","71416fe4b4","7a26d2bdcf","57be69491b","b8ed082189","1b338a2f48","fc52085439","84f1001413","aa63c36ab0","4005d3d118","c65b11dacd","e1db1a9a42","256b82eb55","1e25c0c907","7b06232e27","8b01630705","a676a7dc63"]}
+```
