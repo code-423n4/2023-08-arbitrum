@@ -20,7 +20,7 @@ For the Gas award pool the only concern is for gas usage related to voting, this
 
 ## Automated Findings / Publicly Known Issues
 
-Automated findings output for the audit can be found [here](bot-report.md) within 24 hours of audit opening.
+Automated findings output for the audit can be found [here](https://github.com/code-423n4/2023-08-arbitrum/blob/main/bot-report.md) within 24 hours of audit opening.
 
 *Note for C4 wardens: Anything included in the automated findings output is considered a publicly known issue and is ineligible for awards.*
 
