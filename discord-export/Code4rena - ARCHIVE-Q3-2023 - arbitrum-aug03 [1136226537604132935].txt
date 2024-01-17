@@ -1,0 +1,520 @@
+==============================================================
+Guild: Code4rena
+Channel: ARCHIVE-Q3-2023 / arbitrum-aug03
+==============================================================
+
+[08/02/2023 09:34] kartoonjoy (pinned)
+👋 Hello and welcome to the audit channel for the $90,500 USDC **Arbitrum Security Council Election System** audit!
+
+📆 Audit opens 08/03/2023 20:00 (20:00 UTC) and runs through 08/10/2023 20:00 (20:00 UTC) (7 days).
+
+Please give a warm welcome to the Arbitrum team, particularly @fredlacs, @gzeon, @yahgwai, @godzillaba, @dzack23, who will be available for questions either here in the channel or via DM in the CET and EST timezone(s).
+
+We'll be posting relevant links, documentation, etc. here, so if you intend to participate in this audit, consider enabling notifications for this channel. 🐺 ⏰
+
+Audit Page: https://code4rena.com/contests/2023-08-arbitrum-security-council-election-system#top
+
+{Embed}
+https://code4rena.com/contests/2023-08-arbitrum-security-council-election-system
+Code4rena
+Code4rena is a competitive audit platform that finds more high-severity vulnerabilities, more quickly than any other auditing method.
+Code4rena - ARCHIVE-Q3-2023 - arbitrum-aug03 [1136226537604132935].txt_Files/c4-og-banner-EDA0E.png
+
+{Reactions}
+❤️‍🔥 (2) 🦅 (2) 
+
+[08/02/2023 09:35] kartoonjoy
+Pinned a message.
+
+
+[08/02/2023 13:32] kartoonjoy (pinned)
+**IMPORTANT NOTE:** Prior to receiving payment from this audit you MUST become a Certified Contributor (successfully complete KYC). You do not have to become certified before submitting bugs. But you must successfully complete the certification process within 30 days of the audit end date in order to receive awards. This applies to all audit participants including wardens, teams, bot crews, judges, lookouts, and scouts.
+
+
+[08/02/2023 14:23] itsmetechjay
+Pinned a message.
+
+
+[08/03/2023 17:54] evan#9648
+@gzeon dm-ed
+
+
+[08/03/2023 20:56] 0xprinc
+@fredlacs , @gzeon , @yahgwai, @godzillaba 
+is this the link to the article to understand the governance lifecycle flow of Arbitrum. As mentioned in the contest webpage
+
+
+[08/03/2023 20:57] 0xprinc
+https://docs.arbitrum.foundation/concepts/lifecycle-anatomy-aip-proposal
+
+{Embed}
+https://docs.arbitrum.foundation/concepts/lifecycle-anatomy-aip-proposal
+The lifecycle and anatomy of an Arbitrum Improvement Proposal (AIP)...
+Learn about the process and infrastructure that supports the Arbitrum Improvement Proposal (AIP) protocol, as defined in the Constitution of the Arbitrum DAO.
+
+
+[08/03/2023 22:08] fredlacs
+That's more high level, if you want a technical breakdown checkout https://github.com/ArbitrumFoundation/governance/blob/main/docs/overview.md
+
+
+[08/04/2023 12:30] liffidmonky
+Hey Im new to the audit world, Im just curious about the time given for this audit. I find 7 days might be little time, but as I said im pretty new so I wonder what you guy think of it,
+
+
+[08/04/2023 12:56] berlin.101
+Time is pretty fair considering the lines of code. There have been contests for 10000+ lines of code for 4 weeks. Considering that 1 week for this one is fair. For someone who can only dedicate a few hours/day and is new to auditing this may be not enough to cover everything. Strategy then could be to focus on just a selection of contracts/a particular aspect/module of the whole codebase in focus. Good luck @carlos__alegre 🙏
+
+{Reactions}
+🤟 (2) 
+
+[08/04/2023 13:06] liffidmonky
+Understood 🫡  thanks for the answer 😄
+
+
+[08/04/2023 14:00] itsmetechjay (pinned)
+**Wardens** - please note that the automated findings output (AKA the winning bot race report 🏆, submitted by @IllIllI) is posted below.
+
+These are considered publicly known issues and are not eligible for awards.
+
+**🤖 Automated findings: **
+https://gist.github.com/code423n4/3173e8e05a4e7fe6f28afbb02358b820
+
+**📄 Code4rena submission guidelines and automated findings policy: **
+https://docs.code4rena.com/roles/wardens/submission-policy#automated-findings-ineligible
+
+The above link will also be added to the contest README shortly.
+
+
+[08/04/2023 14:00] itsmetechjay
+Pinned a message.
+
+
+[08/04/2023 16:49] cloudellie
+Please note the automated findings report has been updated, as the version posted earlier was unintentionally truncated.
+
+{Reactions}
+thankyou 
+
+[08/04/2023 17:32] fredlacs
+Popping in to remind yall the twitter spaces starts in about 1 hour!
+https://twitter.com/ArbitrumDevs/status/1686800364312408064
+
+Recording will also be available
+
+{Reactions}
+🎉 (3) 
+
+[08/04/2023 23:37] mukund_rana
+@fredlacs can u check DM pls?
+
+
+[08/05/2023 10:02] paulbirnbaum
+@fredlacs , @gzeon , @yahgwai , @godzillaba , I sent you all a DM and a FR 😉
+
+
+[08/05/2023 10:35] noro9954
+which of the sponsor team is in the CET timezone ?
+
+
+[08/05/2023 10:54] m_rassska
+let's gooo
+
+
+[08/05/2023 11:16] 0xnirlin
+Probably will get back after weekend/
+
+
+[08/05/2023 11:22] 0xprinc
+Threshold is the number of signatures required to execute. 
+So it should be smaller than the member count in security council.
+
+Am i right ?
+
+
+[08/05/2023 12:31] 0xnirlin
+Yes it is probably 9 out of 12, but i saw 7 out of 12 too but prolly that is outdated
+
+
+[08/05/2023 13:16] m_rassska
+9/12 for mainnet, anyways, check out this one: 
+
+https://github.com/ArbitrumFoundation/governance/blob/main/docs/proposal_lifecycle_example.md#security-council-arbitrum-one-emergency
+
+
+[08/05/2023 14:21] fredlacs
+7/12 is for non-emergency actions
+
+{Reactions}
+🔥 
+
+[08/05/2023 22:02] exponential__
+@fredlacs sent DM and FR 🙂
+
+
+[08/06/2023 10:22] supernovahs
+@fredlacs  dmed
+
+
+[08/06/2023 11:44] supernovahs
+Also, NonGovernanceChainSCMgmtActivationAction this contract will be kept on a standby in case of emergency?
+
+
+[08/06/2023 14:53] yahgwai
+This contract is for activating the election system on Arbitrum Nova. It's called 'NonGovernance' as Nova is an Arbitrum chain, but not the one where governance occurs (Arbitrum One)
+
+{Reactions}
+👍 
+
+[08/06/2023 21:00] bronze_pickaxe
+@fredlacs DM'ed
+
+
+[08/07/2023 09:13] noro9954
+@gzeon DMed you
+
+
+[08/07/2023 09:28] bronze_pickaxe
+@gzeon @godzillaba DM'ed 🙂
+
+
+[08/07/2023 09:32] dingo2077
+@fredlacs DM'ed mate🫡
+
+
+[08/07/2023 13:22] 0xhals
+Hi @gzeon  & @godzillaba ,,sent you a DM,,
+
+
+[08/07/2023 15:04] bytes032
+https://twitter.com/bytes032/status/1688566753444429826
+
+{Embed}
+@bytes032.xyz (@bytes032)
+https://twitter.com/bytes032/status/1688566753444429826
+Though I'm not taking part, I hope those who are participating in @arbitrum's contest at @code4rena will find this diagram useful.
+
+Wishing you all the best of luck!
+Code4rena - ARCHIVE-Q3-2023 - arbitrum-aug03 [1136226537604132935].txt_Files/F27-dITXIAAdBZk-77DBA.jpg
+Twitter
+
+{Reactions}
+👍 (8) 🔥 (3) 
+
+[08/07/2023 15:49] fredlacs (pinned)
+btw latejoiner but @dzack23 | Offchain Labs also around to help out answer questions about the codebase! 🙂
+on top of @gzeon @yahgwai @godzillaba
+
+{Reactions}
+👋 (2) 
+
+[08/07/2023 15:53] itsmetechjay
+Pinned a message.
+
+
+[08/07/2023 16:33] 0xnevi
+@fredlacs dmed 😃
+
+
+[08/08/2023 08:52] supernovahs
+Which admin is online? I want to ask a question in dm
+Thx
+
+{Reactions}
+👋 
+
+[08/08/2023 09:45] paulbirnbaum
+@gzeon , I dm you
+
+
+[08/08/2023 09:50] paulbirnbaum
+In the SecurityCouncilManager.sol Contract. There is a external call that I can get my head around.
+
+
+[08/08/2023 09:54] paulbirnbaum
+Indeed, in the "_scheduleUpdate" function, it call :
+```ArbitrumTimelock(l2CoreGovTimelock).schedule({...})```
+
+To get the contest, l2CoreGovTimelock is an Address
+And ArbitrumTimeLock is a contract (not an Interface) that inherit from TimelockControllerUpgradeable.sol from OZ.
+ 
+I've checked and the "l2CoreGovTimelock" isn't an argument of the schedule function.
+
+I wonder what is that "l2CoreGovTimelock".
+
+Thanks
+
+
+[08/08/2023 10:37] gzeon
+l2CoreGovTimelock is set during initialization to the timelock of the Arbitrum Dao core governor
+you can also find the address here 
+https://docs.arbitrum.foundation/deployment-addresses
+
+{Embed}
+https://docs.arbitrum.foundation/deployment-addresses
+DAO contract addresses | Arbitrum DAO - Governance docs
+Token
+
+
+[08/08/2023 13:35] 0xprinc
+@gzeon @fredlacs dmed
+
+
+[08/08/2023 13:35] 0xprinc
+Please check
+
+
+[08/08/2023 13:46] 0xnevi
+Hello is no sponsor responding to dm @gzeon @fredlacs ? Been 2 days 😬
+
+{Reactions}
+👋 
+
+[08/08/2023 13:52] 0xprinc
+Same 🥲
+
+
+[08/08/2023 13:53] 0xnevi
+They might be busy 🥲. Fair for all tho if they reply to none 🙃
+
+
+[08/08/2023 13:54] 0xprinc
+Lemme ask u then 🥲
+
+
+[08/08/2023 13:55] 0xprinc
+_scheduleUpdate schedules with the target contract to be 100.
+
+
+[08/08/2023 13:56] 0xprinc
+Is this the point where there is cross chain interaction done?
+
+
+[08/08/2023 14:06] dzack23 | Offchain Labs#7290
+yes - this is the precompile address for ArbSys https://github.com/OffchainLabs/nitro-contracts/blob/97cfbe00ff0eea4d7f5f5f3afb01598c19ddabc4/src/precompiles/ArbSys.sol
+
+{Embed}
+https://github.com/OffchainLabs/nitro-contracts/blob/97cfbe00ff0eea4d7f5f5f3afb01598c19ddabc4/src/precompiles/ArbSys.sol
+nitro-contracts/src/precompiles/ArbSys.sol at 97cfbe00ff0eea4d7f5f5...
+The core Arbitrum Nitro contracts deployed to the base chain to host the rollup - OffchainLabs/nitro-contracts
+Code4rena - ARCHIVE-Q3-2023 - arbitrum-aug03 [1136226537604132935].txt_Files/nitro-contracts-B789C
+
+
+[08/08/2023 14:16] dzack23 | Offchain Labs#7290
+reminder that my DMs are open as well 👍  i'm on  EST @supernova @0xprinc
+
+
+[08/08/2023 15:26] gzeon
+sorry please ping again if I missed ur message as there are quite a few haha
+
+
+[08/09/2023 09:04] zzebra83
+@gzeon  @dzack23 | Offchain Labs  DM'ed. Thanks
+
+{Reactions}
+👍 
+
+[08/09/2023 11:53] sh3llh4ck3r
+i have submitted the bug report but not showing in my dashboard?
+
+
+[08/09/2023 15:32] angry_mustache_man
+@dzack23 | Offchain Labs   pls accept my fr
+
+
+[08/09/2023 21:43] fredlacs
+wanted to share the audit report Trail of Bits did of the same election system https://forum.arbitrum.foundation/t/proposal-security-council-elections-proposed-implementation-spec/15425/10
+
+the issues described there have been patched in the version yall are looking at, but thought it could still serve as interesting documentation
+
+{Embed}
+https://forum.arbitrum.foundation/t/proposal-security-council-elections-proposed-implementation-spec/15425/10
+Proposal: Security Council Elections Proposed Implementation Spec
+Offchain Labs engaged Trail of Bits to audit the work they did implementing the election system.  The audit report can be viewed in Offchain Labs - Security Council Elections - Summary Report.pdf - Google Drive
+Code4rena - ARCHIVE-Q3-2023 - arbitrum-aug03 [1136226537604132935].txt_Files/discourse-logo-sketch-small-1E4EC.png
+
+{Reactions}
+👍 (6) ❤️ (3) 
+
+[08/10/2023 18:21] 0xnevi
+Done with this audit! This is one of the most solid and tight codebases I’ve ever had the chance to audit. Goodluck to all wardens 🙏
+
+{Reactions}
+🙏 (6) ➕ (2) 
+
+[08/10/2023 20:02] C4
+**🚨 AUDIT ALERT**
+
+@🐺wardens The **Arbitrum Security Council Election System** audit is now closed! Huge thanks to everyone who participated 🔍, whether you submitted a finding or not.
+
+What's next: The sponsor team and judge will review the findings over the next couple of weeks. Keep an eye on #📢announcements for regular updates on how the audit is progressing through awarding 🤑🏆, judging 🧑‍⚖️ and reporting 📜. Feel free to ping a Contest-Admin if you have questions along the way!
+
+❗** If you're not already certified:  **you have 30 days to complete certification or you will not be eligible for awards. Instructions here: https://docs.code4rena.com/roles/certified-contributors
+
+{Embed}
+https://docs.code4rena.com/roles/certified-contributors
+Certified contributors
+In order to create opportunities for contributions which rely on establishment of trust, Code4rena allows community members to opt into certifying their identity and entering into a simple agreement.
+
+{Reactions}
+hi5 (8) ✅ (2) 
+
+[08/11/2023 07:25] dwward3n
+Can this be like Base?
+
+
+[08/11/2023 07:52] c145h
+Amount similar, project alike, but there will be no easy money 😀 😀 😀
+
+
+[08/11/2023 08:01] sm_stack
+Could you inform how many reports are submitted??
+
+
+[08/11/2023 19:17] c145h
+Ask 0xnev, I don't have backstage yet
+
+{Reactions}
+🤣 (3) 
+
+[08/11/2023 19:19] 0xnevi
+268
+
+{Reactions}
+🫡 (6) 
+
+[08/24/2023 16:15] thebrittfactor
+🤑 🎉  Awards for Arbitrum Security:
+
+❗ **If you're not already certified:** you have until **September 10th** to complete certification or you will not be eligible for awards. Instructions here: https://docs.code4rena.com/roles/certified-contributors
+
+$15,482.70 USDC » @MiloTruck 
+$9,842.64 USDC » @Daniel526 
+$9,842.64 USDC » @dirk_y
+$8,545.95 USDC » @HE1M 
+$8,194.00 USDC » @KingNFT 
+$4,429.19 USDC » @AkshaySrivastav 
+$2,457.24 USDC » @hals 
+$2,145.77 USDC » @comradeKtg 
+$1,379.86 USDC » @Kow 
+$1,379.86 USDC » @0xTheC0der 
+$1,018.99 USDC » @Sathish9098 
+$815.43 USDC » @catellatech 
+$665.70 USDC » @K42 Ψ 
+$627.26 USDC » @0xSmartContract 
+$462.24 USDC » @LéoS 
+$437.06 USDC » @berlin.101 
+$355.57 USDC » @JCK 
+$355.57 USDC » @0xAnah 
+$121.27 USDC » @0xnev 
+$85.11 USDC » @kodyvim 
+$85.11 USDC » @yixxas 
+$85.11 USDC » @MSK 
+$74.61 USDC » @udsen_ 
+$38.45 USDC » @ernestognw 
+$38.45 USDC » @!0xcaventa 
+$38.45 USDC » @dharma09 
+$38.45 USDC » @SAAJ 
+$38.45 USDC » @naman1778 
+$38.45 USDC » @petrichor🦖 
+$38.45 USDC » @rektthecode
+$36.16 USDC » @nobody2018 
+$36.16 USDC » @Deleted User 
+$36.16 USDC » @arialblack14 
+$36.16 USDC » @0xbepresent 
+$36.16 USDC » @0xprinc 
+$36.16 USDC » @eierina 
+
+🏁 Findings summary
+--------------------------------------
+High risk findings: 1 unique (3 total)
+Med risk findings: 5 unique (12 total) 
+Gas reports: 13 (Best: LeoS)
+QA reports: 14 (Best: MiloTruck)
+Advanced Analysis reports: 10 (Best: catellatech)
+
+Awards will be distributed on Polygon within the next week. Congratulations all!  💸 💸 💸
+
+Note: If you participated in this audit and don’t see your name on this list, please wait until the report is published and the findings repo is made public to check on your submissions.
+
+{Reactions}
+❤️ (13) 🚀 (11) 🙏 (4) ✅ (6) 
+
+[08/24/2023 16:22] 0xnevi
+Goodjob to all wardens, particularly the top 10, i learnt so much reading ur reports (with the help of backstage ofc 😁)
+
+{Reactions}
+hi5 (5) 🙏 (4) 
+
+[08/24/2023 17:05] milotruck
+Congrats everyone! Huge thanks to @0xean, @sorryNotsorry and sponsors as well for the extremely quick results, I think this one was under 2 weeks 🔥
+
+{Reactions}
+🔥 (10) 🙏 (2) 👍 (2) 🫡 🎉 (2) 
+
+[08/24/2023 17:06] j5066
+Cangrats everyone
+
+{Reactions}
+🚀 (3) 🙏 (3) 
+
+[08/24/2023 17:16] eme0242
+Congrats guys 🎉
+
+{Reactions}
+🔥 (2) 🙏 (2) 
+
+[08/24/2023 17:20] udsen_
+Congratulations all !!!
+
+
+[08/24/2023 18:13] saint6704
+Congrats🎉 @MiloTruck you are absolutely killing it with the results ser
+
+{Reactions}
+🫡 
+
+[08/24/2023 18:38] milotruck
+Thanks!
+
+{Reactions}
+🫡 
+
+[08/24/2023 18:38] saint6704
+ser sent you a fr
+
+
+[08/25/2023 04:58] n3rdziod
+i didn't see my name in the list
+
+
+[08/25/2023 11:43] 0xkral
+When is the report published?
+
+
+[08/25/2023 11:57] 0xkral
+Are there any options to see our submissions and a way to know why they were not validated 🙂
+
+
+[08/25/2023 11:57] 0xkral
+I was under the impression that I had a valid issue🫠
+
+
+[08/25/2023 12:55] 0xprinc
+backstage role ser
+
+
+[08/25/2023 12:56] 0xprinc
+you can check the requirements of that role in code4rena docs
+
+{Reactions}
+🫡 
+
+[08/25/2023 15:03] itsmetechjay
+You will be able to view your issues once the report is published and the findings repo is made public.
+
+{Reactions}
+👍 
+
+==============================================================
+Exported 80 message(s)
+==============================================================
